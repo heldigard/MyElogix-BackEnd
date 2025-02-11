@@ -1,0 +1,67 @@
+data:
+  by:
+    environment: 'DEV-VALUE'
+    branch: 'dev'
+    version: '1.1.0'
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+    hikari:
+      maximum-pool-size: 5 # Smaller pool for development
+      minimum-idle: 2
+      idle-timeout: 300000 # 5 minutes
+      connection-timeout: 20000 # 20 seconds
+      max-lifetime: 900000 # 15 minutes
+      keepalive-time: 150000 # 2.5 minutes
+      validation-timeout: 5000 # 5 seconds
+      leak-detection-threshold: 30000 # 30 seconds
+      pool-name: 'Tarapaca-Dev-Pool'
+      allow-pool-suspension: true # Allows suspension during development
+      register-mbeans: true
+      auto-commit: true
+
+  websecurity:
+    debug: true
+
+  jpa:
+    show-sql: true
+
+server:
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: always
+    include-exception: false
+
+#Logging
+logging:
+  level:
+    hibernate: DEBUG
+    org:
+      springframework:
+        beans: DEBUG
+        orm: DEBUG
+    com:
+      tarapaca:
+        api: DEBUG
+    web: DEBUG
+
+# Management
+management:
+  endpoints:
+    web:
+      exposure:
+        include: 'health,info,metrics,prometheus'
+  endpoint:
+    health:
+      show-details: always
+  info:
+    git:
+      mode: full
+  prometheus:
+    metrics:
+      export:
+        enabled: true

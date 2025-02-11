@@ -1,0 +1,21 @@
+{
+  "printWidth": 80,           // Puedes ajustar este valor según tus preferencias
+  "tabWidth": 4,
+  "useTabs": false,
+  "semi": true,
+  "singleQuote": true,
+  "trailingComma": "all",
+  "bracketSpacing": true,
+  "arrowParens": "avoid",
+  "proseWrap": "always",
+  "overrides": [
+    {
+      "files": "*.java",
+      "options": {
+        "printWidth": 80,     // Ajusta este valor según tu preferencia
+        "tabWidth": 4,
+        "proseWrap": "always"
+      }
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+package com.tarapaca.api.authentication.domain.model;
+
+public enum ETokenType {
+    BEARER,
+    JWT
+}

@@ -1,0 +1,19 @@
+package com.tarapaca.api.customers.infrastructure.entry_points.City;
+
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.tarapaca.api.customers.domain.model.City;
+import com.tarapaca.api.customers.domain.model.gateways.CityGateway;
+import com.tarapaca.api.customers.domain.usecase.CityUseCase;
+import com.tarapaca.api.generics.infrastructure.entry_points.GenericNamedController;
+
+@RestController
+@RequestMapping("/api/v1/city")
+public class CityController
+        extends GenericNamedController<City, CityGateway, CityUseCase> {
+
+    public CityController(CityUseCase useCase) {
+        super(useCase);
+    }
+}

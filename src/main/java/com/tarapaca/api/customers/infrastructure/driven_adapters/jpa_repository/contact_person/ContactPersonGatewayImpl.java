@@ -1,0 +1,24 @@
+package com.tarapaca.api.customers.infrastructure.driven_adapters.jpa_repository.contact_person;
+
+import com.tarapaca.api.customers.domain.model.ContactPerson;
+import com.tarapaca.api.customers.domain.model.gateways.ContactPersonGateway;
+import com.tarapaca.api.customers.infrastructure.helpers.mappers.ContactPersonMapper;
+import com.tarapaca.api.generics.infrastructure.repository.GenericNamed.GenericNamedGatewayImpl;
+import com.tarapaca.api.shared.infraestructure.helpers.UpdateUtils;
+
+import jakarta.persistence.EntityManager;
+
+public class ContactPersonGatewayImpl
+        extends
+        GenericNamedGatewayImpl<ContactPerson, ContactPersonData, ContactPersonDataJpaRepository, ContactPersonMapper>
+        implements ContactPersonGateway {
+
+    public ContactPersonGatewayImpl(
+            ContactPersonDataJpaRepository repository,
+            ContactPersonMapper mapper,
+            EntityManager entityManager,
+            UpdateUtils updateUtils,
+            String deletedFilter) {
+        super(repository, mapper, entityManager, updateUtils, deletedFilter);
+    }
+}

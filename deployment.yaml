@@ -1,0 +1,140 @@
+# deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: $DEPLOYMENT_NAME
+  namespace: $NAMESPACE
+spec:
+  replicas: $REPLICAS
+  selector:
+    matchLabels:
+      app: backend-$NODOLABEL
+  template:
+    metadata:
+      labels:
+        app: backend-$NODOLABEL
+    spec:
+      containers:
+        - name: backend-$NODOLABEL
+          image: $DOCKER_IMAGE_NAME
+          imagePullPolicy: Always
+          env:
+            - name: PROFILE
+              valueFrom:
+                configMapKeyRef:
+                  name: env-backend
+                  key: PROFILE
+            - name: TZ
+              valueFrom:
+                configMapKeyRef:
+                  name: env-backend
+                  key: TZ
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: env-backend
+                  key: DB_HOST
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: env-backend
+                  key: DB_PORT
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: env-backend
+                  key: DB_NAME
+            - name: DB_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: env-backend
+                  key: DB_URL
+            - name: JWT_EXPIRATION
+              valueFrom:
+                configMapKeyRef:
+                  name: env-backend
+                  key: JWT_EXPIRATION
+            - name: JWT_REFRESH_EXPIRATION
+              valueFrom:
+                configMapKeyRef:
+                  name: env-backend
+                  key: JWT_REFRESH_EXPIRATION
+            - name: JWT_SKEW
+              valueFrom:
+                configMapKeyRef:
+                  name: env-backend
+                  key: JWT_SKEW
+            - name: JWT_HEADER
+              valueFrom:
+                configMapKeyRef:
+                  name: env-backend
+                  key: JWT_HEADER
+            - name: JWT_PREFIX
+              valueFrom:
+                configMapKeyRef:
+                  name: env-backend
+                  key: JWT_PREFIX
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: DB_USERNAME
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: DB_PASSWORD
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: JWT_SECRET
+          resources:
+            requests:
+              cpu: 150m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+          ports:
+            - containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 50
+            periodSeconds: 30
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 50
+            periodSeconds: 30
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 50
+            periodSeconds: 30
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+      dnsPolicy: ClusterFirst
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-svc
+  namespace: $NAMESPACE
+spec:
+  type: ClusterIP
+  selector:
+    app: backend-$NODOLABEL
+  ports:
+    - port: 8080

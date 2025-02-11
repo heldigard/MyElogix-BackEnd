@@ -1,0 +1,54 @@
+data:
+  by:
+    environment: 'PROD-VALUE'
+    branch: 'master'
+    version: '1.1.0'
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  hikari:
+    maximum-pool-size: 10 # Optimal for small K8s DB
+    minimum-idle: 3
+    idle-timeout: 600000 # 10 minutes
+    connection-timeout: 30000 # 30 seconds
+    max-lifetime: 1800000 # 30 minutes
+    keepalive-time: 300000 # 5 minutes
+    validation-timeout: 10000 # 10 seconds
+    leak-detection-threshold: 60000 # 1 minute
+    pool-name: 'Tarapaca-Prod-Pool'
+    allow-pool-suspension: false # Disabled in production
+    register-mbeans: true
+    auto-commit: true
+    connection-test-query: 'SELECT 1'
+    initialization-fail-timeout: 60000
+
+  websecurity:
+    debug: false
+
+#Logging
+logging:
+  level:
+    org:
+      springframework:
+        security: INFO
+    web: INFO
+
+# Management
+management:
+  endpoints:
+    web:
+      exposure:
+        include: 'health,info,metrics,prometheus'
+  endpoint:
+    health:
+      show-details: always
+  info:
+    git:
+      mode: full
+  prometheus:
+    metrics:
+      export:
+        enabled: true

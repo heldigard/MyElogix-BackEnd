@@ -1,0 +1,44 @@
+data:
+  by:
+    environment: 'LOCAL-VALUE'
+    branch: 'local'
+    version: '1.1.0'
+
+spring:
+  config:
+    activate:
+      on-profile: local
+
+  hikari:
+    maximum-pool-size: 20
+    minimum-idle: 10
+    idle-timeout: 300000
+    connection-timeout: 20000
+    max-lifetime: 900000
+    keepalive-time: 150000
+    validation-timeout: 5000
+    leak-detection-threshold: 30000
+    pool-name: 'Tarapaca-Local-Pool'
+    allow-pool-suspension: true
+    register-mbeans: true
+    auto-commit: true
+
+  websecurity:
+    debug: true
+
+  jpa:
+    show-sql: true
+
+server:
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: always
+    include-exception: false
+
+logging:
+  level:
+    hibernate: DEBUG
+    org.springframework: DEBUG
+    com.tarapaca.api: DEBUG
+    web: DEBUG
