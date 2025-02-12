@@ -1,0 +1,50 @@
+package com.elogix.api.customers.domain.model;
+
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+
+import com.elogix.api.generics.domain.model.GenericNamed;
+
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
+
+/**
+ * DTO for
+ * {@link com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.contact_person.ContactPersonData}
+ */
+
+@Getter
+@Setter
+@SuperBuilder
+public class ContactPerson extends GenericNamed {
+    private String mobileNumberPrimary;
+    private String mobileNumberSecondary;
+
+    @Builder.Default
+    private Set<Long> branchOfficeIdList = new HashSet<>();
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof ContactPerson that))
+            return false;
+        if (!super.equals(o))
+            return false;
+        return Objects.equals(mobileNumberPrimary, that.mobileNumberPrimary) &&
+                Objects.equals(mobileNumberSecondary, that.mobileNumberSecondary) &&
+                Objects.equals(branchOfficeIdList, that.branchOfficeIdList);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), mobileNumberPrimary, mobileNumberSecondary, branchOfficeIdList);
+    }
+
+    public ContactPerson() {
+        super();
+    }
+}

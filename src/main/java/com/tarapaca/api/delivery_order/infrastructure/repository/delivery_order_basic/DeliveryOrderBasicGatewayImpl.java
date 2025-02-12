@@ -89,13 +89,10 @@ public class DeliveryOrderBasicGatewayImpl
                         Sort sort = getDefaultSort(pagination.getSortOrders());
                         Pageable paging = PageRequest.of(pagination.getPage(), pagination.getPageSize(), sort);
 
-                        Timestamp startTimestamp = Timestamp.from(dateRange.getStartDate());
-                        Timestamp endTimestamp = Timestamp.from(dateRange.getEndDate());
-
                         deliveryOrderBasicDataList = repository.getByStatusAndDateRange(
                                         statusIdList,
-                                        startTimestamp,
-                                        endTimestamp,
+                                        dateRange.startDate(),
+                                        dateRange.endDate(),
                                         paging);
                 }
 
@@ -115,8 +112,8 @@ public class DeliveryOrderBasicGatewayImpl
                         // pagination.getPageSize());
                         List<Long> statusIdList = requestUtils.getBillableDeliveryOrderStatusIds();
 
-                        Timestamp startTimestamp = Timestamp.from(dateRange.getStartDate());
-                        Timestamp endTimestamp = Timestamp.from(dateRange.getEndDate());
+                        Timestamp startTimestamp = Timestamp.from(dateRange.startDate());
+                        Timestamp endTimestamp = Timestamp.from(dateRange.endDate());
 
                         List<CustomerOrdersSummaryDTO> customerOrdersSummary = repository.findCustomerOrdersSummary(
                                         isBilled,

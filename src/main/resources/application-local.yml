@@ -40,5 +40,5 @@ logging:
   level:
     hibernate: DEBUG
     org.springframework: DEBUG
-    com.tarapaca.api: DEBUG
+    com.elogix.api: DEBUG
     web: DEBUG

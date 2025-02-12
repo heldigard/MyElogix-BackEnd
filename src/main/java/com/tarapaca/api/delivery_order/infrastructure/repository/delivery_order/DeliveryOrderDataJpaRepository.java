@@ -14,15 +14,19 @@ import com.tarapaca.api.generics.infrastructure.repository.GenericProduction.Gen
 @Repository
 public interface DeliveryOrderDataJpaRepository
                 extends GenericProductionRepository<DeliveryOrderData> {
-        @Query("SELECT d FROM DeliveryOrderData d WHERE d.id IN (:idList) and d.customer.id = :customerId")
+        @Query("""
+                        FROM DeliveryOrderData do2
+                        WHERE do2.id IN (:idList)
+                        AND do2.customer.id = :customerId
+                        """)
         Optional<DeliveryOrderData> findByIdListAndCustomerId(List<Long> idList, Long customerId, Sort sort);
 
         @Query("""
-                        SELECT d FROM DeliveryOrderData d
-                        WHERE d.customer.id = :customerId
-                        AND d.isBilled = :isBilled
-                        AND d.createdAt BETWEEN :startDate AND :endDate
-                        AND d.status.id IN :statusIdList
+                        FROM DeliveryOrderData do2
+                        WHERE do2.customer.id = :customerId
+                        AND do2.isBilled = :isBilled
+                        AND do2.createdAt BETWEEN :startDate AND :endDate
+                        AND do2.status.id IN :statusIdList
                         """)
         List<DeliveryOrderData> getOrdersForCustomerInvoicing(
                         Long customerId,

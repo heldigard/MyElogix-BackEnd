@@ -1,8 +1,8 @@
-package com.tarapaca.api.config;
+package com.elogix.api.config;
 
-import com.tarapaca.api.authentication.infrastructure.filters.JwtAuthenticationFilter;
-import com.tarapaca.api.authentication.infrastructure.repository.JwtTokenProvider;
-import com.tarapaca.api.authentication.infrastructure.repository.userdetails.UserDetailsServiceImpl;
+import com.elogix.api.authentication.infrastructure.filters.JwtAuthenticationFilter;
+import com.elogix.api.authentication.infrastructure.repository.JwtTokenProvider;
+import com.elogix.api.authentication.infrastructure.repository.userdetails.UserDetailsServiceImpl;
 
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;

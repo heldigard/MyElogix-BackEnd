@@ -1,5 +1,6 @@
 package com.tarapaca.api.delivery_order.infrastructure.repository.delivery_order;
 
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -590,16 +591,18 @@ public class DeliveryOrderGatewayImpl extends
             PaginationCriteria pagination,
             boolean includeDeleted) {
         List<DeliveryOrder> orders;
+
         Sort sort = Sort.by(pagination.getSortOrders());
         Pageable paging = PageRequest.of(pagination.getPage(), pagination.getPageSize(),
                 sort);
+
         List<Long> statusIdList = requestUtils.getBillableDeliveryOrderStatusIds();
         try (Session session = setDeleteFilter(includeDeleted)) {
             List<DeliveryOrderData> ordersData = repository.getOrdersForCustomerInvoicing(
                     customerId,
                     isBilled,
-                    dateRange.getStartDate(),
-                    dateRange.getEndDate(),
+                    dateRange.startDate(),
+                    dateRange.endDate(),
                     statusIdList,
                     paging);
             orders = mapper.toDomain(ordersData).stream().toList();
