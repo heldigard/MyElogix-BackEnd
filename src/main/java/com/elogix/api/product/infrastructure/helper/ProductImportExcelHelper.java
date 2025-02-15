@@ -14,16 +14,21 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
-import com.elogix.api.delivery_orders.infrastructure.driven_adapters.jpa_repository.status.StatusData;
-import com.elogix.api.delivery_orders.infrastructure.driven_adapters.jpa_repository.status.StatusDataJpaRepository;
+import com.elogix.api.delivery_orders.domain.model.EStatus;
+import com.elogix.api.delivery_orders.domain.model.Status;
+import com.elogix.api.delivery_orders.domain.usecase.StatusUseCase;
+import com.elogix.api.product.domain.model.Product;
+import com.elogix.api.product.domain.model.ProductType;
+import com.elogix.api.product.domain.usecase.ProductTypeUseCase;
+import com.elogix.api.product.domain.usecase.ProductUseCase;
 import com.elogix.api.product.dto.ProductExcelResponse;
-import com.elogix.api.product.infrastructure.repository.product.ProductData;
-import com.elogix.api.product.infrastructure.repository.product.ProductDataJpaRepository;
-import com.elogix.api.product.infrastructure.repository.product_type.ProductTypeData;
-import com.elogix.api.product.infrastructure.repository.product_type.ProductTypeDataJpaRepository;
 import com.elogix.api.shared.infraestructure.helpers.ExcelHelper;
+import com.elogix.api.shared.infraestructure.helpers.UpdateUtils;
+import com.elogix.api.shared.infraestructure.helpers.mappers.SortOrderMapper;
+import com.elogix.api.users.domain.model.UserBasic;
 
 import lombok.AllArgsConstructor;
 
@@ -31,9 +36,10 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class ProductImportExcelHelper {
     private final ExcelHelper excelHelper;
-    private final ProductDataJpaRepository productRepository;
-    private final ProductTypeDataJpaRepository productTypeRepository;
-    private final StatusDataJpaRepository statusRepository;
+    private final ProductUseCase useCase;
+    private final ProductTypeUseCase productTypeUseCase;
+    private final StatusUseCase statusUseCase;
+    private final UpdateUtils updateUtils;
 
     public ProductExcelResponse excelToProducts(InputStream inputStream) {
         ProductExcelResponse response = new ProductExcelResponse();
@@ -46,18 +52,26 @@ public class ProductImportExcelHelper {
             Set<String> referenceList = new HashSet<>();
             Map<Integer, String> mapColumns = excelHelper.mapColumns(rows.next());
 
-            List<ProductData> existingList = productRepository.findAll();
-            Map<String, ProductData> mappedProductReferences = excelHelper.mapEntities(existingList,
-                    ProductData::getReference);
+            List<String> properties = List.of("reference");
+            List<String> directions = List.of("asc");
+            List<Sort.Order> sortOrders = SortOrderMapper.createSortOrders(properties, directions);
+            List<Product> existingList = useCase.findAll(sortOrders, false);
+            Map<String, Product> mappedProductReferences = excelHelper.mapEntities(existingList,
+                    Product::getReference);
 
-            List<ProductTypeData> existingProductTypes = productTypeRepository.findAll();
-            Map<String, ProductTypeData> mappedProductTypeNames = excelHelper.mapEntities(existingProductTypes,
-                    ProductTypeData::getName);
+            properties = List.of("name");
+            sortOrders = SortOrderMapper.createSortOrders(properties, directions);
+            List<ProductType> existingProductTypes = productTypeUseCase.findAll(sortOrders, false);
+            Map<String, ProductType> mappedProductTypeNames = excelHelper.mapEntities(existingProductTypes,
+                    ProductType::getName);
 
-            List<StatusData> existingStatuses = statusRepository.findAll();
-            Map<String, StatusData> mappedStatusNames = excelHelper.mapEntities(existingStatuses,
+            properties = List.of("name");
+            sortOrders = SortOrderMapper.createSortOrders(properties, directions);
+            List<Status> existingStatuses = statusUseCase.findAll(sortOrders, false);
+            Map<String, Status> mappedStatusNames = excelHelper.mapEntities(existingStatuses,
                     data -> data.getName().toString());
 
+            UserBasic currentUser = updateUtils.getCurrentUser();
             int numOfNonEmptyCells = excelHelper.getNumberOfNonEmptyCells(sheet, 0);
 
             for (int rowIndex = 0; rowIndex < numOfNonEmptyCells - 1; rowIndex++) {
@@ -68,13 +82,18 @@ public class ProductImportExcelHelper {
                     continue;
                 }
 
-                ProductData product;
+                Product product;
                 if (mappedProductReferences.containsKey(cellValue)) {
                     product = mappedProductReferences.get(cellValue);
                     product.setUpdatedAt(Instant.now());
+                    product.setUpdatedBy(currentUser);
                 } else {
-                    product = new ProductData();
-                    product.setCreatedAt(Instant.now());
+                    product = Product.builder()
+                            .createdAt(Instant.now())
+                            .createdBy(currentUser)
+                            .isActive(true)
+                            .hits(0L)
+                            .build();
                 }
 
                 Iterator<Cell> cellsInRow = currentRow.iterator();
@@ -108,14 +127,14 @@ public class ProductImportExcelHelper {
         }
     }
 
-    private ProductData _setupProductFromCell(
+    private Product _setupProductFromCell(
             int cellIdx,
             Cell cell,
-            ProductData product,
+            Product product,
             Set<String> errors,
             Map<Integer, String> mapColumns,
-            Map<String, ProductTypeData> mappedProductTypeNames,
-            Map<String, StatusData> mappedStatusNames) {
+            Map<String, ProductType> mappedProductTypeNames,
+            Map<String, Status> mappedStatusNames) {
         final String cellValue = excelHelper.getCleanCellValue(cell, true);
 
         String columnName = mapColumns.get(cellIdx);
@@ -150,6 +169,12 @@ public class ProductImportExcelHelper {
 
             case "Estado":
                 product.setStatus(mappedStatusNames.get(cellValue));
+                if (product.getStatus().getName() == EStatus.LOW_STOCK) {
+                    product.setLowStock(true);
+                }
+                if (product.getStatus().getName() == EStatus.OUT_OF_STOCK) {
+                    product.setActive(false);
+                }
 
                 return product;
 

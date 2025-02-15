@@ -1,8 +1,6 @@
 package com.elogix.api.shared.infraestructure.helpers.mappers;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.springframework.data.domain.Sort;
@@ -22,16 +20,15 @@ public class SortOrderMapper {
         }
 
         List<Sort.Order> sortOrders = IntStream.range(0, properties.size())
-            .filter(i -> properties.get(i) != null && !properties.get(i).trim().isEmpty())
-            .mapToObj(i -> new Sort.Order(
-                getDirection(directions, i),
-                properties.get(i).trim()
-            ))
-            .toList();
+                .filter(i -> properties.get(i) != null && !properties.get(i).trim().isEmpty())
+                .mapToObj(i -> new Sort.Order(
+                        getDirection(directions, i),
+                        properties.get(i).trim()))
+                .toList();
 
         return sortOrders.isEmpty()
-            ? List.of(new Sort.Order(DEFAULT_DIRECTION, DEFAULT_SORT_PROPERTY))
-            : sortOrders;
+                ? List.of(new Sort.Order(DEFAULT_DIRECTION, DEFAULT_SORT_PROPERTY))
+                : sortOrders;
     }
 
     private static Direction getDirection(List<String> directions, int index) {

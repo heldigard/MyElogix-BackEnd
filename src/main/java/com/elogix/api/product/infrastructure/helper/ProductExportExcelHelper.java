@@ -1,7 +1,10 @@
 package com.elogix.api.product.infrastructure.helper;
 
-import com.elogix.api.product.infrastructure.repository.product.ProductData;
-import lombok.AllArgsConstructor;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.List;
+
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -9,15 +12,14 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Component;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.List;
+import com.elogix.api.product.domain.model.Product;
+
+import lombok.AllArgsConstructor;
 
 @Component
 @AllArgsConstructor
 public class ProductExportExcelHelper {
-    public ByteArrayInputStream productsToExcel(List<ProductData> products) {
+    public ByteArrayInputStream productsToExcel(List<Product> products) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         String[] HEADERs = {
                 "Referencia",
@@ -39,7 +41,7 @@ public class ProductExportExcelHelper {
             }
 
             int rowIdx = 1;
-            for (ProductData product : products) {
+            for (Product product : products) {
                 Row row = sheet.createRow(rowIdx++);
 
                 row.createCell(0).setCellValue(product.getReference());
@@ -47,8 +49,7 @@ public class ProductExportExcelHelper {
 
                 if (product.getType() != null) {
                     row.createCell(2).setCellValue(
-                            product.getType().getCategory() != null ? product.getType().getCategory().getName() : ""
-                    );
+                            product.getType().getCategory() != null ? product.getType().getCategory().getName() : "");
                     row.createCell(3).setCellValue(product.getType().getName());
                 } else {
                     row.createCell(2).setCellValue("");

@@ -110,7 +110,8 @@ public class DeliveryOrderController
     @PutMapping("/billing-status/{id}")
     @PreAuthorize(UPDATE_DELIVERY_ORDER)
     @Transactional
-    public ResponseEntity<ApiResponse<DeliveryOrder>> updateIsBilled(@PathVariable Long id,
+    public ResponseEntity<ApiResponse<DeliveryOrder>> updateIsBilled(
+            @PathVariable Long id,
             @RequestParam(required = false, defaultValue = "false") boolean isBilled) {
         try {
             DeliveryOrder response = useCase.updateIsBilled(id, isBilled);
@@ -154,18 +155,16 @@ public class DeliveryOrderController
         try {
             DeliveryOrder order = useCase.findById(id, includeDeleted);
             DeliveryOrderResponse response = DeliveryOrderResponse.builder().order(order)
-                    .productionCount(
-                            (int) order.getProductOrders().stream()
-                                    .filter(ProductOrder::isProduction).count())
-                    .finishedCount(
-                            (int) order.getProductOrders().stream()
-                                    .filter(ProductOrder::isFinished).count())
-                    .deliveredCount(
-                            (int) order.getProductOrders().stream()
-                                    .filter(ProductOrder::isDelivered).count())
-                    .cancelledCount(
-                            (int) order.getProductOrders().stream()
-                                    .filter(ProductOrder::isCancelled).count())
+                    .pendingCount((int) order.getProductOrders().stream()
+                            .filter(ProductOrder::isPending).count())
+                    .productionCount((int) order.getProductOrders().stream()
+                            .filter(ProductOrder::isProduction).count())
+                    .finishedCount((int) order.getProductOrders().stream()
+                            .filter(ProductOrder::isFinished).count())
+                    .deliveredCount((int) order.getProductOrders().stream()
+                            .filter(ProductOrder::isDelivered).count())
+                    .cancelledCount((int) order.getProductOrders().stream()
+                            .filter(ProductOrder::isCancelled).count())
                     .pausedCount((int) order.getProductOrders().stream()
                             .filter(ProductOrder::isPaused).count())
                     .build();
