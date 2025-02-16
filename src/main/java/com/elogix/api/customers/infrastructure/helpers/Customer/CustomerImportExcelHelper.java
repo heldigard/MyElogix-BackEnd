@@ -1,187 +1,142 @@
-package com.elogix.api.customers.infrastructure.helpers.Customer;
+package com.elogix.api.customers.infrastructure.helpers.customer;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.time.Instant;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.validator.routines.EmailValidator;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
-import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.branch_office.BranchOfficeData;
-import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.city_basic.CityBasicData;
-import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.city_basic.CityBasicDataJpaRepository;
-import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.contact_person_basic.ContactPersonBasicData;
-import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.customer.CustomerData;
-import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.customer.CustomerDataJpaRepository;
-import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.delivery_zone_basic.DeliveryZoneBasicData;
-import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.delivery_zone_basic.DeliveryZoneBasicDataJpaRepository;
-import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.document_type.DocumentTypeData;
-import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.document_type.DocumentTypeDataJpaRepository;
-import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.membership.MembershipData;
-import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.membership.MembershipDataJpaRepository;
-import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.neighborhood.NeighborhoodData;
-import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.neighborhood.NeighborhoodDataJpaRepository;
+import com.elogix.api.customers.domain.model.BranchOffice;
+import com.elogix.api.customers.domain.model.CityBasic;
+import com.elogix.api.customers.domain.model.ContactPersonBasic;
+import com.elogix.api.customers.domain.model.Customer;
+import com.elogix.api.customers.domain.model.DeliveryZoneBasic;
+import com.elogix.api.customers.domain.model.DocumentType;
+import com.elogix.api.customers.domain.model.Membership;
+import com.elogix.api.customers.domain.model.Neighborhood;
+import com.elogix.api.customers.domain.usecase.CityBasicUseCase;
+import com.elogix.api.customers.domain.usecase.CustomerUseCase;
+import com.elogix.api.customers.domain.usecase.DeliveryZoneBasicUseCase;
+import com.elogix.api.customers.domain.usecase.DocumentTypeUseCase;
+import com.elogix.api.customers.domain.usecase.MembershipUseCase;
+import com.elogix.api.customers.domain.usecase.NeighborhoodUseCase;
 import com.elogix.api.customers.infrastructure.entry_points.dto.CustomerExcelResponse;
+import com.elogix.api.generics.infrastructure.helpers.excel.GenericImportExcelHelper;
 import com.elogix.api.shared.infraestructure.helpers.ExcelHelper;
+import com.elogix.api.shared.infraestructure.helpers.UpdateUtils;
+import com.elogix.api.shared.infraestructure.helpers.mappers.SortOrderMapper;
 
-import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
-@AllArgsConstructor
-public class CustomerImportExcelHelper {
-    private final ExcelHelper excelHelper;
-    private final DocumentTypeDataJpaRepository documentTypeRepository;
-    private final NeighborhoodDataJpaRepository neighborhoodRepository;
-    private final CityBasicDataJpaRepository cityRepository;
-    private final DeliveryZoneBasicDataJpaRepository deliveryZoneRepository;
-    private final MembershipDataJpaRepository membershipRepository;
-    private final CustomerDataJpaRepository customerRepository;
+public class CustomerImportExcelHelper extends GenericImportExcelHelper<Customer, CustomerExcelResponse> {
+    private final CustomerUseCase useCase;
+    private final DocumentTypeUseCase docTypeUseCase;
+    private final NeighborhoodUseCase neighborUseCase;
+    private final CityBasicUseCase cityUseCase;
+    private final DeliveryZoneBasicUseCase zoneUseCase;
+    private final MembershipUseCase membershipUseCase;
 
-    public CustomerExcelResponse excelToCustomers(InputStream inputStream) {
-        CustomerExcelResponse response = new CustomerExcelResponse();
+    private Map<String, DocumentType> mappedDocumentTypes;
+    private Map<String, Neighborhood> mappedNeighborhoods;
+    private Map<String, CityBasic> mappedCities;
+    private Map<String, DeliveryZoneBasic> mappedZones;
+    private Map<String, Membership> mappedMemberships;
 
+    public CustomerImportExcelHelper(
+            ExcelHelper excelHelper,
+            UpdateUtils updateUtils,
+            CustomerUseCase useCase,
+            DocumentTypeUseCase docTypeUseCase,
+            NeighborhoodUseCase neighborUseCase,
+            CityBasicUseCase cityUseCase,
+            DeliveryZoneBasicUseCase zoneUseCase,
+            MembershipUseCase membershipUseCase) {
+        super(excelHelper, updateUtils);
+        this.useCase = useCase;
+        this.docTypeUseCase = docTypeUseCase;
+        this.neighborUseCase = neighborUseCase;
+        this.cityUseCase = cityUseCase;
+        this.zoneUseCase = zoneUseCase;
+        this.membershipUseCase = membershipUseCase;
+    }
+
+    private void initializeMaps() {
         try {
-            Workbook workbook = new XSSFWorkbook(inputStream);
-            Sheet sheet = workbook.getSheetAt(0);
-            Iterator<Row> rows = sheet.iterator();
-            HashMap<String, String> customerList = new HashMap<>();
+            log.info("Initializing maps for CustomerImportExcelHelper");
 
-            Map<Integer, String> mapColumns = excelHelper.mapColumns(rows.next());
+            List<Sort.Order> sortOrders = SortOrderMapper.createSortOrders(
+                    List.of("name"),
+                    List.of("asc"));
 
-            List<CustomerData> existingList = customerRepository.findAll();
-            Map<String, CustomerData> mappedCustomers = excelHelper.mapEntities(existingList,
-                    CustomerData::getDocumentNumber);
+            // Initialize document types
+            List<DocumentType> documentTypes = docTypeUseCase.findAll(sortOrders, false);
+            this.mappedDocumentTypes = excelHelper.mapEntities(documentTypes, DocumentType::getName);
 
-            List<DocumentTypeData> existingDocumentTypes = documentTypeRepository.findAll();
-            Map<String, DocumentTypeData> mappedDocumentTypeNames = excelHelper.mapEntities(existingDocumentTypes,
-                    DocumentTypeData::getName);
+            // Initialize neighborhoods
+            List<Neighborhood> neighborhoods = neighborUseCase.findAll(sortOrders, false);
+            this.mappedNeighborhoods = excelHelper.mapEntities(neighborhoods, Neighborhood::getName);
 
-            List<NeighborhoodData> existingNeighborhoods = neighborhoodRepository.findAll();
-            Map<String, NeighborhoodData> mappedNeighborNames = excelHelper.mapEntities(existingNeighborhoods,
-                    NeighborhoodData::getName);
+            // Initialize cities
+            List<CityBasic> cities = cityUseCase.findAll(sortOrders, false);
+            this.mappedCities = excelHelper.mapEntities(cities, CityBasic::getName);
 
-            List<CityBasicData> existingCities = cityRepository.findAll();
-            Map<String, CityBasicData> mappedCityNames = excelHelper.mapEntities(existingCities,
-                    CityBasicData::getName);
+            // Initialize zones
+            List<DeliveryZoneBasic> zones = zoneUseCase.findAll(sortOrders, false);
+            this.mappedZones = excelHelper.mapEntities(zones, DeliveryZoneBasic::getName);
 
-            List<DeliveryZoneBasicData> existingZones = deliveryZoneRepository.findAll();
-            Map<String, DeliveryZoneBasicData> mappedZoneNames = excelHelper
-                    .mapEntities(existingZones, DeliveryZoneBasicData::getName);
-
-            List<MembershipData> existingMemberships = membershipRepository.findAll();
-            Map<String, MembershipData> mappedMembershipNames = excelHelper.mapEntities(existingMemberships,
+            // Initialize memberships
+            List<Membership> memberships = membershipUseCase.findAll(sortOrders, false);
+            this.mappedMemberships = excelHelper.mapEntities(memberships,
                     data -> data.getName().toString());
 
-            int numOfNonEmptyCells = excelHelper.getNumberOfNonEmptyCells(sheet, 0);
-
-            for (int rowIndex = 0; rowIndex < numOfNonEmptyCells - 1; rowIndex++) {
-                Row currentRow = rows.next();
-
-                Integer documentIndex = excelHelper.getIndexColumn("Documento", mapColumns);
-                if (documentIndex == -1) {
-                    response.getErrors().add("Could not find 'Documento' column");
-                    break;
-                }
-
-                Integer nameIndex = excelHelper.getIndexColumn("Nombre", mapColumns);
-                if (nameIndex == -1) {
-                    response.getErrors().add("Could not find 'Nombre' column");
-                    break;
-                }
-
-                String cellValue = excelHelper.getCleanCellValue(currentRow.getCell(documentIndex), true);
-                if (customerList.containsKey(cellValue)) {
-                    String name = excelHelper.getCleanCellValue(currentRow.getCell(nameIndex), true);
-                    if (name.equals(customerList.get(cellValue)))
-                        response.getErrors().add("Error: Registro duplicado: "
-                                + cellValue + " con " + name);
-                    continue;
-                }
-
-                CustomerData customer;
-                if (mappedCustomers.containsKey(cellValue)) {
-                    customer = mappedCustomers.get(cellValue);
-                    customer.setUpdatedAt(Instant.now());
-                } else {
-                    customer = new CustomerData();
-                    customer.setCreatedAt(Instant.now());
-                }
-
-                Iterator<Cell> cellsInRow = currentRow.iterator();
-
-                while (cellsInRow.hasNext()) {
-                    Cell currentCell = cellsInRow.next();
-                    int cellIdx = currentCell.getColumnIndex();
-                    customer = _setupCustomerFromCell(
-                            cellIdx,
-                            currentCell,
-                            customer,
-                            response.getErrors(),
-                            mapColumns,
-                            mappedDocumentTypeNames,
-                            mappedNeighborNames,
-                            mappedCityNames,
-                            mappedZoneNames,
-                            mappedMembershipNames);
-                }
-
-                if (!(customerList.containsKey(customer.getDocumentNumber())
-                        && customerList.get(customer.getDocumentNumber()).equals(customer.getName()))) {
-                    if (customer.getBranchOfficeList().stream().findFirst().get().getAddress() == null) {
-                        response.getErrors().add("Error: " + customer.getDocumentNumber() +
-                                " El cliente debe tener una dirección");
-                        continue;
-                    }
-
-                    if (customer.getName() == null) {
-                        response.getErrors().add("Error: " + customer.getDocumentNumber() +
-                                " El cliente debe tener un nombre");
-                        continue;
-                    }
-
-                    response.getCustomers().add(customer);
-                    customerList.put(customer.getDocumentNumber(), customer.getName());
-                } else {
-                    response.getErrors().add("Error: Registro duplicado: " + customer.getDocumentNumber());
-                }
-            }
-
-            workbook.close();
-
-            return response;
-
-        } catch (
-
-        IOException e) {
-            response.getErrors().add(e.getMessage());
-            throw new RuntimeException("fail to parse Excel file: " + e.getMessage());
+            log.info("Maps initialized successfully");
+        } catch (Exception e) {
+            log.error("Error initializing maps: ", e);
+            throw new RuntimeException("Error initializing CustomerImportExcelHelper", e);
         }
     }
 
-    private CustomerData _setupCustomerFromCell(
+    @Override
+    protected List<Customer> findAllEntities() {
+        initializeMaps();
+        return useCase.findAll(getSortOrders(), false);
+    }
+
+    @Override
+    protected String getEntityIdentifier(Customer entity) {
+        return entity.getDocumentNumber();
+    }
+
+    @Override
+    protected Set<String> getRequiredColumns() {
+        return Set.of("Documento", "Nombre", "Direccion", "Email", "Telefono");
+    }
+
+    @Override
+    protected boolean isIdentifierColumn(String columnName) {
+        return "Documento".equals(columnName);
+    }
+
+    @Override
+    protected Customer processCell(
             int cellIdx,
             Cell cell,
-            CustomerData customer,
-            Set<String> errors,
-            Map<Integer, String> mapColumns,
-            Map<String, DocumentTypeData> mappedDocumentTypeNames,
-            Map<String, NeighborhoodData> mappedNeighborNames,
-            Map<String, CityBasicData> mappedCityNames,
-            Map<String, DeliveryZoneBasicData> mappedZoneNames,
-            Map<String, MembershipData> mappedMembershipNames) {
-        final String cellValue = excelHelper.getCleanCellValue(cell, true);
+            Customer customer,
+            CustomerExcelResponse response,
+            Map<Integer, String> mapColumns) {
 
+        if (cell == null) {
+            return customer;
+        }
+
+        final String cellValue = excelHelper.getCleanCellValue(cell, true);
         String columnName = mapColumns.get(cellIdx);
 
         if ((cellValue.isEmpty() && !columnName.equals("Ciudad"))
@@ -192,122 +147,119 @@ public class CustomerImportExcelHelper {
 
         switch (columnName) {
             case "Documento":
-                if (customer.getDocumentNumber() == null) {
-                    if (cellValue.length() > 6 && cellValue.length() < 15) {
-                        customer.setDocumentNumber(cellValue);
-                    } else {
-                        errors.add("Error: " + cellValue + " El documento debe tener entre 6 y 10 digitos");
-                    }
-                }
-
-                return customer;
+                processDocument(customer, cellValue, response);
+                break;
 
             case "Tipo":
-                customer.setDocumentType(mappedDocumentTypeNames.get(cellValue));
-
-                return customer;
+                customer.setDocumentType(mappedDocumentTypes.get(cellValue));
+                break;
 
             case "Nombre":
                 customer.setName(cellValue);
-
-                return customer;
+                break;
 
             case "Direccion":
                 setBranchOffice(customer, clearAddress(cellValue));
-
-                return customer;
+                break;
 
             case "Email":
-                String email = excelHelper.getCleanEmailAddress(cellValue);
-                if (EmailValidator.getInstance()
-                        .isValid(email)) {
-                    customer.setEmail(email);
-                } else {
-                    errors.add("Error: " + email + " El email es invalido," +
-                            " customerId: " + customer.getDocumentNumber());
-                }
-
-                return customer;
+                processEmail(customer, cellValue, response);
+                break;
 
             case "Telefono":
-                String phone = clearPhone(cellValue);
-                if (phone.length() > 6 && phone.length() < 15) {
-                    customer.setPhone(phone);
-                } else {
-                    errors.add("Error: " + phone + " El telefono debe tener entre 7 y 10 digitos," +
-                            " customerId: " + customer.getDocumentNumber());
-                }
-
-                return customer;
+                processPhone(customer, cellValue, response);
+                break;
 
             case "Contacto":
                 setContactPerson(customer, cellValue);
-
-                return customer;
+                break;
 
             case "Celular":
-                String cellphone = clearPhone(cellValue);
-                if (cellphone.length() > 6 && cellphone.length() < 15) {
-                    setContactPhone(customer, cellphone);
-                } else {
-                    errors.add("Error: " + cellphone + " El celular debe tener 10 digitos," +
-                            " customerId: " + customer.getDocumentNumber());
-                }
-
-                return customer;
+                processMobilePhone(customer, cellValue, response, true);
+                break;
 
             case "Celular2":
-                String cellphone2 = clearPhone(cellValue);
-                if (cellphone2.length() > 6 && cellphone2.length() < 15) {
-                    setContactPhone2(customer, cellphone2);
-                } else {
-                    errors.add("Error: " + cellphone2 + " El celular debe tener 10 digitos," +
-                            " customerId: " + customer.getDocumentNumber());
-                }
-
-                return customer;
+                processMobilePhone(customer, cellValue, response, false);
+                break;
 
             case "Ciudad":
-                setCity(customer, cellValue, mappedCityNames, mappedNeighborNames);
-
-                return customer;
+                setCity(customer, cellValue);
+                break;
 
             case "Sector":
-                setNeighborhood(customer, cellValue, mappedNeighborNames);
-
-                return customer;
+                setNeighborhood(customer, cellValue);
+                break;
 
             case "Ruta":
-                setDeliveryZone(customer, cellValue, mappedZoneNames);
-
-                return customer;
+                setZone(customer, cellValue);
+                break;
 
             case "Membresia":
-                String membresia = cellValue
-                        .replace("(", "")
-                        .replace(")", "")
-                        .trim();
-                customer.setMembership(mappedMembershipNames.get(membresia));
+                String membresia = cellValue.replace("(", "").replace(")", "").trim();
+                customer.setMembership(mappedMemberships.get(membresia));
+                break;
+        }
 
-                return customer;
+        return customer;
+    }
 
-            default:
-                return customer;
+    private void processDocument(Customer customer, String value, CustomerExcelResponse response) {
+        if (customer.getDocumentNumber() == null) {
+            if (value.length() > 6 && value.length() < 15) {
+                customer.setDocumentNumber(value);
+            } else {
+                response.addError("Error: " + value + " El documento debe tener entre 6 y 10 digitos");
+            }
         }
     }
 
-    private void setBranchOffice(CustomerData customer, String cellValue) {
+    private void processEmail(Customer customer, String value, CustomerExcelResponse response) {
+        String email = excelHelper.getCleanEmailAddress(value);
+        if (EmailValidator.getInstance().isValid(email)) {
+            customer.setEmail(email);
+        } else {
+            response.addError("Error: " + email + " El email es invalido, customerId: " +
+                    customer.getDocumentNumber());
+        }
+    }
+
+    private void processPhone(Customer customer, String value, CustomerExcelResponse response) {
+        String phone = clearPhone(value);
+        if (phone.length() > 6 && phone.length() < 15) {
+            customer.setPhone(phone);
+        } else {
+            response.addError("Error: " + phone + " El telefono debe tener entre 7 y 10 digitos, customerId: " +
+                    customer.getDocumentNumber());
+        }
+    }
+
+    private void processMobilePhone(Customer customer, String value, CustomerExcelResponse response,
+            boolean isPrimary) {
+        String phone = clearPhone(value);
+        if (phone.length() > 6 && phone.length() < 15) {
+            if (isPrimary) {
+                setContactPhone(customer, phone);
+            } else {
+                setContactPhone2(customer, phone);
+            }
+        } else {
+            response.addError("Error: " + phone + " El celular debe tener 10 digitos, customerId: " +
+                    customer.getDocumentNumber());
+        }
+    }
+
+    private void setBranchOffice(Customer customer, String cellValue) {
         if (customer.getBranchOfficeList() == null) {
             customer.setBranchOfficeList(new HashSet<>());
         }
 
         if (customer.getBranchOfficeList().isEmpty()) {
-            customer.getBranchOfficeList().add(new BranchOfficeData());
+            customer.getBranchOfficeList().add(new BranchOffice());
         }
 
-        BranchOfficeData branchOfficeData = customer.getBranchOfficeList().iterator().next();
-        branchOfficeData.setCustomerId(customer.getId());
-        branchOfficeData.setAddress(cellValue);
+        BranchOffice office = customer.getBranchOfficeList().iterator().next();
+        office.setCustomerId(customer.getId());
+        office.setAddress(cellValue);
     }
 
     private String clearAddress(String address) {
@@ -316,33 +268,33 @@ public class CustomerImportExcelHelper {
                 .replace("#", "");
     }
 
-    private void setContactPerson(CustomerData customer, String cellValue) {
+    private void setContactPerson(Customer customer, String cellValue) {
         if (customer.getBranchOfficeList().isEmpty()) {
-            customer.getBranchOfficeList().add(new BranchOfficeData());
+            customer.getBranchOfficeList().add(new BranchOffice());
         }
 
         customer.getBranchOfficeList().stream()
                 .findFirst()
-                .ifPresent(branchOfficeData -> branchOfficeData
-                        .setContactPerson(ContactPersonBasicData.builder().name(cellValue).build()));
+                .ifPresent(office -> office
+                        .setContactPerson(ContactPersonBasic.builder().name(cellValue).build()));
     }
 
-    private void setContactPhone(CustomerData customer, String cellValue) {
+    private void setContactPhone(Customer customer, String cellValue) {
         customer.getBranchOfficeList().stream()
                 .findFirst()
-                .ifPresent(branchOfficeData -> {
-                    if (branchOfficeData.getContactPerson() != null) {
-                        branchOfficeData.getContactPerson().setMobileNumberPrimary(cellValue);
+                .ifPresent(office -> {
+                    if (office.getContactPerson() != null) {
+                        office.getContactPerson().setMobileNumberPrimary(cellValue);
                     }
                 });
     }
 
-    private void setContactPhone2(CustomerData customer, String cellValue) {
+    private void setContactPhone2(Customer customer, String cellValue) {
         customer.getBranchOfficeList().stream()
                 .findFirst()
-                .ifPresent(branchOfficeData -> {
-                    if (branchOfficeData.getContactPerson() != null) {
-                        branchOfficeData.getContactPerson().setMobileNumberSecondary(cellValue);
+                .ifPresent(office -> {
+                    if (office.getContactPerson() != null) {
+                        office.getContactPerson().setMobileNumberSecondary(cellValue);
                     }
                 });
     }
@@ -356,90 +308,100 @@ public class CustomerImportExcelHelper {
                 .replace(".", "");
     }
 
-    private void setCity(
-            CustomerData customer,
-            String cellValue,
-            Map<String, CityBasicData> mappedCityNames,
-            Map<String, NeighborhoodData> mappedNeighborNames) {
+    private void setCity(Customer customer, String cellValue) {
         customer.getBranchOfficeList().stream()
                 .findFirst()
-                .ifPresent(branchOfficeData -> {
-                    if (mappedCityNames.get(cellValue) != null) {
-                        branchOfficeData.setCity(mappedCityNames.get(cellValue));
-                    } else if (mappedNeighborNames.get(cellValue) != null) {
-                        branchOfficeData.setCity(mappedNeighborNames.get(cellValue).getCity());
+                .ifPresent(office -> {
+                    if (mappedCities.get(cellValue) != null) {
+                        office.setCity(mappedCities.get(cellValue));
+                    } else if (mappedNeighborhoods.get(cellValue) != null) {
+                        office.setCity(mappedNeighborhoods.get(cellValue).getCity());
                     }
                 });
     }
 
-    private void setNeighborhood(
-            CustomerData customer,
-            String cellValue,
-            Map<String, NeighborhoodData> mappedNeighborNames) {
+    private void setNeighborhood(Customer customer, String cellValue) {
         customer.getBranchOfficeList().stream()
                 .findFirst()
-                .ifPresent(branchOfficeData -> {
-                    if (mappedNeighborNames.get(cellValue) != null) {
-                        branchOfficeData.setNeighborhood(mappedNeighborNames.get(cellValue));
-                        if (branchOfficeData.getDeliveryZone() == null) {
-                            branchOfficeData.setDeliveryZone(mappedNeighborNames.get(cellValue).getDeliveryZone());
+                .ifPresent(office -> {
+                    if (mappedNeighborhoods.get(cellValue) != null) {
+                        office.setNeighborhood(mappedNeighborhoods.get(cellValue));
+                        if (office.getDeliveryZone() == null) {
+                            office.setDeliveryZone(mappedNeighborhoods.get(cellValue).getDeliveryZone());
                         }
-                        if (branchOfficeData.getCity() == null) {
-                            branchOfficeData.setCity(mappedNeighborNames.get(cellValue).getCity());
-                        }
-                    } else if (branchOfficeData.getAddress() != null) {
-                        String[] splited = cellValue.split("\\s+");
-                        String barrio = splited[splited.length - 1];
-
-                        if (mappedNeighborNames.get(barrio) != null) {
-                            if (branchOfficeData.getDeliveryZone() == null) {
-                                branchOfficeData.setDeliveryZone(mappedNeighborNames.get(cellValue).getDeliveryZone());
-                            }
-                            if (branchOfficeData.getCity() == null) {
-                                branchOfficeData.setCity(mappedNeighborNames.get(barrio).getCity());
-                            }
+                        if (office.getCity() == null) {
+                            office.setCity(mappedNeighborhoods.get(cellValue).getCity());
                         }
                     }
                 });
     }
 
-    private void setDeliveryZone(
-            CustomerData customer,
-            String cellValue,
-            Map<String, DeliveryZoneBasicData> mappedZoneNames) {
+    private void setZone(Customer customer, String cellValue) {
         customer.getBranchOfficeList().stream()
                 .findFirst()
-                .ifPresent(branchOfficeData -> {
-                    if (mappedZoneNames.get(cellValue) != null) {
-                        branchOfficeData.setDeliveryZone(mappedZoneNames.get(cellValue));
+                .ifPresent(office -> {
+                    if (mappedZones.get(cellValue) != null) {
+                        office.setDeliveryZone(mappedZones.get(cellValue));
                     } else {
-                        String[] splited = cellValue.split("\\s+");
-                        String ruta = splited.length > 1 ? splited[1] : splited[0];
-
-                        try {
-                            Integer rutaNumber = Integer.valueOf(ruta);
-
-                            switch (rutaNumber) {
-                                case 1:
-                                    branchOfficeData.setDeliveryZone(mappedZoneNames.get("RUTA 1"));
-                                    break;
-                                case 2:
-                                    branchOfficeData.setDeliveryZone(mappedZoneNames.get("RUTA 2"));
-                                    break;
-                                case 3:
-                                    branchOfficeData.setDeliveryZone(mappedZoneNames.get("RUTA 3"));
-                                    break;
-                                case 4:
-                                    branchOfficeData.setDeliveryZone(mappedZoneNames.get("RUTA 4"));
-                                    break;
-                                default:
-                                    branchOfficeData.setDeliveryZone(mappedZoneNames.get("EXTERNA"));
-                                    break;
-                            }
-                        } catch (Exception e) {
-                            branchOfficeData.setDeliveryZone(mappedZoneNames.get("EXTERNA"));
-                        }
+                        processDefaultZone(office, cellValue);
                     }
                 });
+    }
+
+    private void processDefaultZone(BranchOffice office, String cellValue) {
+        String[] splited = cellValue.split("\\s+");
+        String ruta = splited.length > 1 ? splited[1] : splited[0];
+
+        try {
+            Integer rutaNumber = Integer.valueOf(ruta);
+            String zoneName = rutaNumber >= 1 && rutaNumber <= 4
+                    ? "RUTA " + rutaNumber
+                    : "EXTERNA";
+            office.setDeliveryZone(mappedZones.get(zoneName));
+        } catch (Exception e) {
+            office.setDeliveryZone(mappedZones.get("EXTERNA"));
+        }
+    }
+
+    @Override
+    protected boolean isValidEntity(Customer entity, Set<String> processedItems, CustomerExcelResponse response) {
+        if (entity.getDocumentNumber() == null || entity.getDocumentNumber().isEmpty()) {
+            response.addError("Error: El documento es requerido");
+            return false;
+        }
+
+        if (processedItems.contains(entity.getDocumentNumber())) {
+            response.addError("Error: El documento " + entity.getDocumentNumber() + " está duplicado");
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    protected void addToProcessedItems(Customer entity, Set<String> processedItems) {
+        processedItems.add(entity.getDocumentNumber());
+    }
+
+    @Override
+    protected List<Sort.Order> getSortOrders() {
+        return SortOrderMapper.createSortOrders(
+                List.of("documentNumber", "name"),
+                List.of("asc", "asc"));
+    }
+
+    @Override
+    protected Customer createEntity() {
+        return Customer.builder()
+                .createdAt(Instant.now())
+                .createdBy(getCurrentUser())
+                .isActive(true)
+                .branchOfficeList(new HashSet<>())
+                .build();
+    }
+
+    @Override
+    protected CustomerExcelResponse createResponse() {
+        return new CustomerExcelResponse();
     }
 }

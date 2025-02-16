@@ -1,206 +1,198 @@
-package com.elogix.api.customers.infrastructure.helpers.Neighborhood;
+package com.elogix.api.customers.infrastructure.helpers.neighborhood;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
-import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.city_basic.CityBasicData;
-import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.city_basic.CityBasicDataJpaRepository;
-import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.delivery_zone_basic.DeliveryZoneBasicData;
-import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.delivery_zone_basic.DeliveryZoneBasicDataJpaRepository;
-import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.neighborhood.NeighborhoodData;
-import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.neighborhood.NeighborhoodDataJpaRepository;
+import com.elogix.api.customers.domain.model.CityBasic;
+import com.elogix.api.customers.domain.model.DeliveryZoneBasic;
+import com.elogix.api.customers.domain.model.Neighborhood;
+import com.elogix.api.customers.domain.usecase.CityBasicUseCase;
+import com.elogix.api.customers.domain.usecase.DeliveryZoneBasicUseCase;
+import com.elogix.api.customers.domain.usecase.NeighborhoodUseCase;
 import com.elogix.api.customers.infrastructure.entry_points.dto.NeighborhoodExcelResponse;
+import com.elogix.api.generics.infrastructure.helpers.excel.GenericImportExcelHelper;
 import com.elogix.api.shared.infraestructure.helpers.ExcelHelper;
+import com.elogix.api.shared.infraestructure.helpers.UpdateUtils;
+import com.elogix.api.shared.infraestructure.helpers.mappers.SortOrderMapper;
 
-import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
-@AllArgsConstructor
-public class NeighborhoodImportExcelHelper {
-    private final ExcelHelper excelHelper;
-    private final NeighborhoodDataJpaRepository neighborhoodRepository;
-    private final CityBasicDataJpaRepository cityRepository;
-    private final DeliveryZoneBasicDataJpaRepository deliveryZoneRepository;
+public class NeighborhoodImportExcelHelper extends GenericImportExcelHelper<Neighborhood, NeighborhoodExcelResponse> {
 
-    public NeighborhoodExcelResponse excelToNeighborhoods(InputStream inputStream) {
-        NeighborhoodExcelResponse response = new NeighborhoodExcelResponse();
+    private final NeighborhoodUseCase useCase;
+    private final CityBasicUseCase cityUseCase;
+    private final DeliveryZoneBasicUseCase zoneUseCase;
+    private Map<String, CityBasic> mappedCities;
+    private Map<String, DeliveryZoneBasic> mappedZones;
 
-        try {
-            Workbook workbook = new XSSFWorkbook(inputStream);
-            Sheet sheet = workbook.getSheetAt(0);
-            Iterator<Row> rows = sheet.iterator();
-            Map<String, String> neighborhoodList = new HashMap<>();
-
-            Map<Integer, String> mapColumns = excelHelper.mapColumns(rows.next());
-
-            List<NeighborhoodData> existingList = neighborhoodRepository.findAll();
-            Map<String, NeighborhoodData> mappedNeighborNames = excelHelper.mapEntities(existingList,
-                    NeighborhoodData::getName);
-
-            List<CityBasicData> existingCityList = cityRepository.findAll();
-            Map<String, CityBasicData> mappedCityNames = excelHelper.mapEntities(existingCityList,
-                    CityBasicData::getName);
-
-            List<DeliveryZoneBasicData> existingDeliveryZoneList = deliveryZoneRepository.findAll();
-            Map<String, DeliveryZoneBasicData> mappedZoneNames = excelHelper.mapEntities(existingDeliveryZoneList,
-                    DeliveryZoneBasicData::getName);
-
-            int numOfNonEmptyCells = excelHelper.getNumberOfNonEmptyCells(sheet, 0);
-
-            for (int rowIndex = 0; rowIndex < numOfNonEmptyCells - 1; rowIndex++) {
-                Row currentRow = rows.next();
-
-                Integer nameIndex = excelHelper.getIndexColumn("Sector", mapColumns);
-                if (nameIndex == -1) {
-                    response.getErrors().add("Could not find 'Sector' column");
-                    break;
-                }
-
-                Integer cityIndex = excelHelper.getIndexColumn("Ciudad", mapColumns);
-                if (cityIndex == -1) {
-                    response.getErrors().add("Could not find 'Ciudad' column");
-                    break;
-                }
-
-                String cellValue = excelHelper.getCleanCellValue(currentRow.getCell(nameIndex), true);
-                if (neighborhoodList.containsKey(cellValue)) {
-                    String city = excelHelper.getCleanCellValue(currentRow.getCell(cityIndex), true);
-                    if (city.equals(neighborhoodList.get(cellValue)))
-                        response.getErrors().add("Error: Registro duplicado: "
-                                + cellValue + " en " + city);
-                    continue;
-                }
-
-                NeighborhoodData neighborhood;
-                if (mappedNeighborNames.containsKey(cellValue)) {
-                    neighborhood = mappedNeighborNames.get(cellValue);
-                } else {
-                    neighborhood = new NeighborhoodData();
-                }
-
-                Iterator<Cell> cellsInRow = currentRow.iterator();
-
-                while (cellsInRow.hasNext()) {
-                    Cell currentCell = cellsInRow.next();
-                    int cellIdx = currentCell.getColumnIndex();
-                    neighborhood = _setupNeighborhoodFromCell(
-                            cellIdx,
-                            currentCell,
-                            neighborhood,
-                            response.getErrors(),
-                            mapColumns,
-                            mappedNeighborNames,
-                            mappedCityNames,
-                            mappedZoneNames);
-                }
-
-                if (!(neighborhoodList.containsKey(neighborhood.getName())
-                        && neighborhoodList.get(neighborhood.getName()).equals(neighborhood.getCity().getName()))) {
-                    response.getNeighborhoods().add(neighborhood);
-                    neighborhoodList.put(neighborhood.getName(), neighborhood.getCity().getName());
-                } else {
-                    response.getErrors().add("Error: Registro duplicado: "
-                            + neighborhood.getName() + " en " + neighborhood.getCity().getName());
-                }
-            }
-
-            workbook.close();
-
-            return response;
-
-        } catch (IOException e) {
-            response.getErrors().add(e.getMessage());
-            throw new RuntimeException("fail to parse Excel file: " + e.getMessage());
-        }
+    public NeighborhoodImportExcelHelper(
+            ExcelHelper excelHelper,
+            UpdateUtils updateUtils,
+            NeighborhoodUseCase useCase,
+            CityBasicUseCase cityUseCase,
+            DeliveryZoneBasicUseCase zoneUseCase) {
+        super(excelHelper, updateUtils);
+        this.useCase = useCase;
+        this.cityUseCase = cityUseCase;
+        this.zoneUseCase = zoneUseCase;
     }
 
-    private NeighborhoodData _setupNeighborhoodFromCell(
+    @Override
+    protected List<Neighborhood> findAllEntities() {
+        initializeMaps();
+        return useCase.findAll(getSortOrders(), false);
+    }
+
+    private void initializeMaps() {
+        List<Sort.Order> sortOrders = SortOrderMapper.createSortOrders(
+                List.of("name"),
+                List.of("asc"));
+
+        List<CityBasic> cities = cityUseCase.findAll(sortOrders, false);
+        this.mappedCities = excelHelper.mapEntities(cities, CityBasic::getName);
+
+        List<DeliveryZoneBasic> zones = zoneUseCase.findAll(sortOrders, false);
+        this.mappedZones = excelHelper.mapEntities(zones, DeliveryZoneBasic::getName);
+    }
+
+    @Override
+    protected String getEntityIdentifier(Neighborhood entity) {
+        return entity.getName();
+    }
+
+    @Override
+    protected Set<String> getRequiredColumns() {
+        return Set.of("Sector", "Ciudad", "Ruta");
+    }
+
+    @Override
+    protected boolean isIdentifierColumn(String columnName) {
+        return "Sector".equals(columnName);
+    }
+
+    @Override
+    protected Neighborhood processCell(
             int cellIdx,
             Cell cell,
-            NeighborhoodData neighborhood,
-            Set<String> errors,
-            Map<Integer, String> mapColumns,
-            Map<String, NeighborhoodData> mappedNeighborNames,
-            Map<String, CityBasicData> mappedCityNames,
-            Map<String, DeliveryZoneBasicData> mappedZoneNames) {
+            Neighborhood neighborhood,
+            NeighborhoodExcelResponse response,
+            Map<Integer, String> mapColumns) {
+
+        if (cell == null) {
+            return neighborhood;
+        }
+
         final String cellValue = excelHelper.getCleanCellValue(cell, true);
+        String columnName = mapColumns.get(cellIdx);
 
         if (cellValue.isEmpty() || cellValue.contains("N/A")) {
             return neighborhood;
         }
 
-        String columnName = mapColumns.get(cellIdx);
-
         switch (columnName) {
             case "Sector":
-                if (neighborhood.getName() == null) {
-                    neighborhood.setName(cellValue);
-                }
-                if (neighborhood.getCity() == null && mappedCityNames.containsKey(cellValue)) {
-                    neighborhood.setCity(mappedCityNames.get(cellValue));
-                }
-
-                return neighborhood;
+                neighborhood.setName(cellValue);
+                break;
 
             case "Ciudad":
-                if (mappedCityNames.containsKey(cellValue)) {
-                    neighborhood.setCity(mappedCityNames.get(cellValue));
-                } else if (mappedNeighborNames.containsKey(cellValue)) {
-                    neighborhood.setCity(mappedNeighborNames.get(cellValue).getCity());
-                } else {
-                    neighborhood.setCity(CityBasicData.builder().name(cellValue).build());
-                }
-
-                return neighborhood;
+                setCity(neighborhood, cellValue);
+                break;
 
             case "Ruta":
-                if (mappedZoneNames.containsKey(cellValue)) {
-                    neighborhood.setDeliveryZone(mappedZoneNames.get(cellValue));
-                } else {
-                    String[] splited = cellValue.split("\\s+");
-                    String ruta = splited.length > 1 ? splited[1] : splited[0];
-
-                    try {
-                        Integer rutaNumber = Integer.valueOf(ruta);
-
-                        switch (rutaNumber) {
-                            case 1:
-                                neighborhood.setDeliveryZone(mappedZoneNames.get("RUTA 1"));
-                                break;
-                            case 2:
-                                neighborhood.setDeliveryZone(mappedZoneNames.get("RUTA 2"));
-                                break;
-                            case 3:
-                                neighborhood.setDeliveryZone(mappedZoneNames.get("RUTA 3"));
-                                break;
-                            case 4:
-                                neighborhood.setDeliveryZone(mappedZoneNames.get("RUTA 4"));
-                                break;
-                            default:
-                                neighborhood.setDeliveryZone(mappedZoneNames.get("EXTERNA"));
-                                break;
-                        }
-                    } catch (Exception e) {
-                        neighborhood.setDeliveryZone(mappedZoneNames.get("EXTERNA"));
-                    }
-                }
-
-                return neighborhood;
-
-            default:
-                return neighborhood;
+                setDeliveryZone(neighborhood, cellValue);
+                break;
         }
+
+        return neighborhood;
+    }
+
+    private void setCity(Neighborhood neighborhood, String cellValue) {
+        if (mappedCities.containsKey(cellValue)) {
+            neighborhood.setCity(mappedCities.get(cellValue));
+        } else {
+            neighborhood.setCity(CityBasic.builder().name(cellValue).build());
+        }
+    }
+
+    private void setDeliveryZone(Neighborhood neighborhood, String cellValue) {
+        if (mappedZones.containsKey(cellValue)) {
+            neighborhood.setDeliveryZone(mappedZones.get(cellValue));
+            return;
+        }
+
+        String[] splited = cellValue.split("\\s+");
+        String ruta = splited.length > 1 ? splited[1] : splited[0];
+
+        try {
+            Integer rutaNumber = Integer.valueOf(ruta);
+            String zoneName = rutaNumber >= 1 && rutaNumber <= 4
+                    ? "RUTA " + rutaNumber
+                    : "EXTERNA";
+            neighborhood.setDeliveryZone(mappedZones.get(zoneName));
+        } catch (Exception e) {
+            neighborhood.setDeliveryZone(mappedZones.get("EXTERNA"));
+        }
+    }
+
+    // Add these methods after the existing methods
+    @Override
+    protected boolean isValidEntity(Neighborhood entity, Set<String> processedItems,
+            NeighborhoodExcelResponse response) {
+        if (entity.getName() == null || entity.getName().isEmpty()) {
+            response.addError("Error: El nombre del sector es requerido");
+            return false;
+        }
+
+        if (entity.getCity() == null) {
+            response.addError("Error: La ciudad es requerida para el sector %s", entity.getName());
+            return false;
+        }
+
+        if (entity.getDeliveryZone() == null) {
+            response.addError("Error: La ruta es requerida para el sector %s", entity.getName());
+            return false;
+        }
+
+        if (processedItems.contains(entity.getName())) {
+            response.addError("Error: El sector %s está duplicado", entity.getName());
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    protected void addToProcessedItems(Neighborhood entity, Set<String> processedItems) {
+        if (entity != null && entity.getName() != null) {
+            processedItems.add(entity.getName());
+        }
+    }
+
+    @Override
+    protected List<Sort.Order> getSortOrders() {
+        return SortOrderMapper.createSortOrders(
+                List.of("name"),
+                List.of("asc"));
+    }
+
+    @Override
+    protected Neighborhood createEntity() {
+        return Neighborhood.builder()
+                .createdAt(Instant.now())
+                .createdBy(getCurrentUser())
+                .build();
+    }
+
+    @Override
+    protected NeighborhoodExcelResponse createResponse() {
+        return new NeighborhoodExcelResponse();
     }
 }

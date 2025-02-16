@@ -2,9 +2,9 @@ package com.elogix.api.product.domain.model;
 
 import java.util.Objects;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.elogix.api.generics.domain.model.GenericStatus;
 import com.elogix.api.product.infrastructure.repository.product.ProductData;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -27,7 +27,7 @@ public class Product extends GenericStatus {
     private Long hits = 0L;
 
     @Builder.Default
-    @JsonProperty("isActive")
+    @JsonProperty(value = "isActive", defaultValue = "true")
     private boolean isActive = true;
 
     @Builder.Default

@@ -1,38 +1,39 @@
 package com.elogix.api.product.infrastructure.repository.product_type;
 
-import com.elogix.api.product.dto.ProductTypeExcelResponse;
-import com.elogix.api.product.infrastructure.helper.ProductTypeImportExcelHelper;
-import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
+import java.util.List;
 
-import java.io.IOException;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Component;
+
+import com.elogix.api.generics.infrastructure.helpers.excel.GenericExcelService;
+import com.elogix.api.product.domain.gateway.ProductTypeGateway;
+import com.elogix.api.product.domain.model.ProductType;
+import com.elogix.api.product.domain.usecase.ProductTypeUseCase;
+import com.elogix.api.product.dto.ProductTypeExcelResponse;
+import com.elogix.api.product.infrastructure.helper.ProductTypeExportExcelHelper;
+import com.elogix.api.product.infrastructure.helper.ProductTypeImportExcelHelper;
+import com.elogix.api.shared.infraestructure.helpers.mappers.SortOrderMapper;
 
 @Component
-@AllArgsConstructor
-public class ProductTypeExcelService {
-    private final ProductTypeDataJpaRepository repository;
-    private final ProductTypeImportExcelHelper importExcelHelper;
-//    private final ProductTypeExportExcelHelper exportExcelHelper;
+public class ProductTypeExcelService
+        extends GenericExcelService<ProductType, ProductTypeExcelResponse, ProductTypeGateway, ProductTypeUseCase> {
 
-    public ProductTypeExcelResponse importExcelFile(MultipartFile file) {
-        ProductTypeExcelResponse productTypesResponse = new ProductTypeExcelResponse();
-        try {
-            productTypesResponse = importExcelHelper.excelToProductTypes(file.getInputStream());
-            repository.saveAll(productTypesResponse.getProductTypes());
-        } catch (IOException e) {
-            productTypesResponse.getErrors().add(e.getMessage());
-            throw new RuntimeException("fail to store excel data: " + e.getMessage());
-        }
-
-        return productTypesResponse;
+    public ProductTypeExcelService(
+            ProductTypeUseCase useCase,
+            ProductTypeImportExcelHelper importExcelHelper,
+            ProductTypeExportExcelHelper exportExcelHelper) {
+        super(useCase, importExcelHelper, exportExcelHelper);
     }
 
-//    TODO
-//    public ByteArrayInputStream exportExcelFile() {
-//        List<ProductTypeData> productTypes = repository.findAll();
-//
-//        ByteArrayInputStream in = exportExcelHelper.productTypesToExcel(productTypes);
-//        return in;
-//    }
+    @Override
+    protected ProductTypeExcelResponse createResponse() {
+        return new ProductTypeExcelResponse();
+    }
+
+    @Override
+    protected List<Sort.Order> getSortOrders() {
+        return SortOrderMapper.createSortOrders(
+                List.of("name"),
+                List.of("asc"));
+    }
 }

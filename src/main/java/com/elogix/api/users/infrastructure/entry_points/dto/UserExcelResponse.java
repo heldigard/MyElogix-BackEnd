@@ -1,19 +1,17 @@
 package com.elogix.api.users.infrastructure.entry_points.dto;
 
-import com.elogix.api.users.infrastructure.driven_adapters.jpa_repository.user.UserData;
-import lombok.*;
+import com.elogix.api.generics.infrastructure.dto.ExcelResponse;
+import com.elogix.api.users.domain.model.UserModel;
 
-import java.util.HashSet;
-import java.util.Set;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
-@AllArgsConstructor
-public class UserExcelResponse {
-    @Builder.Default
-    Set<UserData> users = new HashSet<>();
-    @Builder.Default
-    Set<String> errors = new HashSet<>();
+@SuppressWarnings("unchecked")
+public class UserExcelResponse extends ExcelResponse<UserModel> {
 }

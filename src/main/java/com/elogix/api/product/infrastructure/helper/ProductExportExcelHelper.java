@@ -1,74 +1,48 @@
 package com.elogix.api.product.infrastructure.helper;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.List;
-
-import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Component;
 
+import com.elogix.api.generics.infrastructure.helpers.excel.GenericExportExcelHelper;
 import com.elogix.api.product.domain.model.Product;
 
-import lombok.AllArgsConstructor;
-
 @Component
-@AllArgsConstructor
-public class ProductExportExcelHelper {
-    public ByteArrayInputStream productsToExcel(List<Product> products) {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        String[] HEADERs = {
+public class ProductExportExcelHelper extends GenericExportExcelHelper<Product> {
+
+    @Override
+    protected String getSheetName() {
+        return "Products";
+    }
+
+    @Override
+    protected String[] getHeaders() {
+        return new String[] {
                 "Referencia",
                 "Descripcion",
                 "Categoria",
                 "SubCategoria",
                 "Estado"
         };
+    }
 
-        try {
-            Workbook workbook = new XSSFWorkbook();
-            Sheet sheet = workbook.createSheet("Products");
+    @Override
+    protected void writeEntityToRow(Product product, Row row) {
+        row.createCell(0).setCellValue(product.getReference());
+        row.createCell(1).setCellValue(product.getDescription());
 
-            // Header
-            Row headerRow = sheet.createRow(0);
-            for (int col = 0; col < HEADERs.length; col++) {
-                Cell cell = headerRow.createCell(col);
-                cell.setCellValue(HEADERs[col]);
-            }
+        if (product.getType() != null) {
+            row.createCell(2).setCellValue(
+                    product.getType().getCategory() != null ? product.getType().getCategory().getName() : "");
+            row.createCell(3).setCellValue(product.getType().getName());
+        } else {
+            row.createCell(2).setCellValue("");
+            row.createCell(3).setCellValue("");
+        }
 
-            int rowIdx = 1;
-            for (Product product : products) {
-                Row row = sheet.createRow(rowIdx++);
-
-                row.createCell(0).setCellValue(product.getReference());
-                row.createCell(1).setCellValue(product.getDescription());
-
-                if (product.getType() != null) {
-                    row.createCell(2).setCellValue(
-                            product.getType().getCategory() != null ? product.getType().getCategory().getName() : "");
-                    row.createCell(3).setCellValue(product.getType().getName());
-                } else {
-                    row.createCell(2).setCellValue("");
-                    row.createCell(3).setCellValue("");
-                }
-
-                if (product.getStatus() != null) {
-                    row.createCell(4).setCellValue(product.getStatus().getName().toString());
-                } else {
-                    row.createCell(4).setCellValue("");
-                }
-            }
-
-            workbook.write(outputStream);
-
-            return new ByteArrayInputStream(outputStream.toByteArray());
-
-        } catch (IOException e) {
-            throw new RuntimeException("fail to parse Excel file: " + e.getMessage());
+        if (product.getStatus() != null) {
+            row.createCell(4).setCellValue(product.getStatus().getName().toString());
+        } else {
+            row.createCell(4).setCellValue("");
         }
     }
 }

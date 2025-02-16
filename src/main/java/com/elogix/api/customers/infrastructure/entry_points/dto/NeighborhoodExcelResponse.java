@@ -1,26 +1,17 @@
 package com.elogix.api.customers.infrastructure.entry_points.dto;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import com.elogix.api.customers.domain.model.Neighborhood;
+import com.elogix.api.generics.infrastructure.dto.ExcelResponse;
 
-import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.neighborhood.NeighborhoodData;
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
-@AllArgsConstructor
-public class NeighborhoodExcelResponse {
-    @Builder.Default
-    List<NeighborhoodData> neighborhoods = new ArrayList<NeighborhoodData>();
-    @Builder.Default
-    Set<String> errors = new HashSet<>();
+@SuppressWarnings("unchecked")
+public class NeighborhoodExcelResponse extends ExcelResponse<Neighborhood> {
 }

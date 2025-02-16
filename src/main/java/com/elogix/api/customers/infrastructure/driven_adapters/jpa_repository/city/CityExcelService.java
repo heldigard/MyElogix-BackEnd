@@ -1,41 +1,38 @@
 package com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.city;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.util.List;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
 
+import com.elogix.api.customers.domain.model.City;
+import com.elogix.api.customers.domain.model.gateways.CityGateway;
+import com.elogix.api.customers.domain.usecase.CityUseCase;
 import com.elogix.api.customers.infrastructure.entry_points.dto.CityExcelResponse;
-import com.elogix.api.customers.infrastructure.helpers.City.CityExportExcelHelper;
-import com.elogix.api.customers.infrastructure.helpers.City.CityImportExcelHelper;
-
-import lombok.AllArgsConstructor;
+import com.elogix.api.customers.infrastructure.helpers.city.CityExportExcelHelper;
+import com.elogix.api.customers.infrastructure.helpers.city.CityImportExcelHelper;
+import com.elogix.api.generics.infrastructure.helpers.excel.GenericExcelService;
+import com.elogix.api.shared.infraestructure.helpers.mappers.SortOrderMapper;
 
 @Component
-@AllArgsConstructor
-public class CityExcelService {
-    private final CityDataJpaRepository repository;
-    private final CityImportExcelHelper importExcelHelper;
-    private final CityExportExcelHelper exportExcelHelper;
+public class CityExcelService extends GenericExcelService<City, CityExcelResponse, CityGateway, CityUseCase> {
 
-    public CityExcelResponse importExcelFile(MultipartFile file) {
-        CityExcelResponse citiesResponse = new CityExcelResponse();
-        try {
-            citiesResponse = importExcelHelper.excelToCities(file.getInputStream());
-            repository.saveAll(citiesResponse.getCities());
-        } catch (IOException e) {
-            citiesResponse.getErrors().add(e.getMessage());
-            throw new RuntimeException("fail to store excel data: " + e.getMessage());
-        }
-        return citiesResponse;
+    public CityExcelService(
+            CityUseCase useCase,
+            CityImportExcelHelper importExcelHelper,
+            CityExportExcelHelper exportExcelHelper) {
+        super(useCase, importExcelHelper, exportExcelHelper);
     }
 
-    public ByteArrayInputStream exportExcelFile() {
-        List<CityData> cities = repository.findAll();
+    @Override
+    protected CityExcelResponse createResponse() {
+        return new CityExcelResponse();
+    }
 
-        ByteArrayInputStream in = exportExcelHelper.citiesToExcel(cities);
-        return in;
+    @Override
+    protected List<Sort.Order> getSortOrders() {
+        return SortOrderMapper.createSortOrders(
+                List.of("name"),
+                List.of("asc"));
     }
 }

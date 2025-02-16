@@ -1,9 +1,11 @@
 package com.elogix.api.shared.infraestructure.helpers;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -120,4 +122,31 @@ public class ExcelHelper {
                 .findFirst()
                 .orElse(-1);
     }
+
+    public Map<Integer, String> getColumnMap(Iterator<Row> rows) {
+        if (rows == null || !rows.hasNext()) {
+            return new HashMap<>();
+        }
+        return mapColumns(rows.next());
+    }
+
+    public void validateRequiredColumns(Map<Integer, String> columnMap, Set<String> errors,
+            Set<String> requiredColumns) {
+        if (columnMap.isEmpty()) {
+            errors.add("El archivo está vacío o no contiene encabezados");
+            return;
+        }
+
+        Set<String> missingColumns = requiredColumns.stream()
+                .filter(required -> columnMap.values().stream()
+                        .noneMatch(column -> column.equalsIgnoreCase(required)))
+                .collect(Collectors.toSet());
+
+        if (!missingColumns.isEmpty()) {
+            errors.add("Faltan las siguientes columnas requeridas: " +
+                    String.join(", ", missingColumns));
+        }
+    }
+
+    
 }

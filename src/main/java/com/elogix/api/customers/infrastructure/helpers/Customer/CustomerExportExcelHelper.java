@@ -1,29 +1,25 @@
-package com.elogix.api.customers.infrastructure.helpers.Customer;
+package com.elogix.api.customers.infrastructure.helpers.customer;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.List;
 import java.util.Optional;
 
-import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Component;
 
-import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.branch_office.BranchOfficeData;
-import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.customer.CustomerData;
-
-import lombok.AllArgsConstructor;
+import com.elogix.api.customers.domain.model.BranchOffice;
+import com.elogix.api.customers.domain.model.Customer;
+import com.elogix.api.generics.infrastructure.helpers.excel.GenericExportExcelHelper;
 
 @Component
-@AllArgsConstructor
-public class CustomerExportExcelHelper {
-    public ByteArrayInputStream customersToExcel(List<CustomerData> customers) {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        String[] HEADERs = {
+public class CustomerExportExcelHelper extends GenericExportExcelHelper<Customer> {
+
+    @Override
+    protected String getSheetName() {
+        return "Customers";
+    }
+
+    @Override
+    protected String[] getHeaders() {
+        return new String[] {
                 "Documento",
                 "Tipo",
                 "Nombre",
@@ -38,77 +34,43 @@ public class CustomerExportExcelHelper {
                 "Ruta",
                 "Membresia"
         };
+    }
 
-        try {
-            Workbook workbook = new XSSFWorkbook();
-            Sheet sheet = workbook.createSheet("Customers");
+    @Override
+    protected void writeEntityToRow(Customer customer, Row row) {
+        Optional<BranchOffice> office = customer.getBranchOfficeList().stream().findFirst();
 
-            // Header
-            Row headerRow = sheet.createRow(0);
-            for (int col = 0; col < HEADERs.length; col++) {
-                Cell cell = headerRow.createCell(col);
-                cell.setCellValue(HEADERs[col]);
-            }
+        row.createCell(0).setCellValue(customer.getDocumentNumber());
+        row.createCell(1).setCellValue(customer.getDocumentType().getName());
+        row.createCell(2).setCellValue(customer.getName());
+        row.createCell(3).setCellValue(office.map(BranchOffice::getAddress).orElse(""));
+        row.createCell(4).setCellValue(customer.getEmail());
+        row.createCell(5).setCellValue(customer.getPhone());
 
-            int rowIdx = 1;
-            for (CustomerData customer : customers) {
-                Row row = sheet.createRow(rowIdx++);
-                Optional<BranchOfficeData> branchOffice = customer.getBranchOfficeList().stream().findFirst();
-
-                row.createCell(0).setCellValue(customer.getDocumentNumber());
-                row.createCell(1).setCellValue(customer.getDocumentType().getName());
-                row.createCell(2).setCellValue(customer.getName());
-
-                if (branchOffice.isPresent()) {
-                    row.createCell(3).setCellValue(branchOffice.get().getAddress());
-                } else {
-                    row.createCell(3).setCellValue("");
-                }
-
-                row.createCell(4).setCellValue(customer.getEmail());
-                row.createCell(5).setCellValue(customer.getPhone());
-
-                if (branchOffice.isPresent() && branchOffice.get().getContactPerson() != null) {
-                    row.createCell(6).setCellValue(branchOffice.get().getContactPerson().getName());
-                    row.createCell(7).setCellValue(branchOffice.get().getContactPerson().getMobileNumberPrimary());
-                    row.createCell(8).setCellValue(branchOffice.get().getContactPerson().getMobileNumberSecondary());
-                } else {
-                    row.createCell(6).setCellValue("");
-                    row.createCell(7).setCellValue("");
-                    row.createCell(8).setCellValue("");
-                }
-
-                if (branchOffice.isPresent() && branchOffice.get().getCity() != null) {
-                    row.createCell(9).setCellValue(branchOffice.get().getCity().getName());
-                } else {
-                    row.createCell(9).setCellValue("");
-                }
-
-                if (branchOffice.isPresent() && branchOffice.get().getNeighborhood() != null) {
-                    row.createCell(10).setCellValue(branchOffice.get().getNeighborhood().getName());
-                } else {
-                    row.createCell(10).setCellValue("");
-                }
-
-                if (branchOffice.isPresent() && branchOffice.get().getDeliveryZone() != null) {
-                    row.createCell(11).setCellValue(branchOffice.get().getDeliveryZone().getName());
-                } else {
-                    row.createCell(11).setCellValue("");
-                }
-
-                if (customer.getMembership() != null) {
-                    row.createCell(12).setCellValue(customer.getMembership().getName().toString());
-                } else {
-                    row.createCell(12).setCellValue("");
-                }
-            }
-
-            workbook.write(outputStream);
-
-            return new ByteArrayInputStream(outputStream.toByteArray());
-
-        } catch (IOException e) {
-            throw new RuntimeException("fail to parse Excel file: " + e.getMessage());
+        if (office.isPresent() && office.get().getContactPerson() != null) {
+            row.createCell(6).setCellValue(office.get().getContactPerson().getName());
+            row.createCell(7).setCellValue(office.get().getContactPerson().getMobileNumberPrimary());
+            row.createCell(8).setCellValue(office.get().getContactPerson().getMobileNumberSecondary());
+        } else {
+            row.createCell(6).setCellValue("");
+            row.createCell(7).setCellValue("");
+            row.createCell(8).setCellValue("");
         }
+
+        if (office.isPresent()) {
+            row.createCell(9).setCellValue(
+                    office.get().getCity() != null ? office.get().getCity().getName() : "");
+            row.createCell(10).setCellValue(
+                    office.get().getNeighborhood() != null ? office.get().getNeighborhood().getName() : "");
+            row.createCell(11).setCellValue(
+                    office.get().getDeliveryZone() != null ? office.get().getDeliveryZone().getName() : "");
+        } else {
+            row.createCell(9).setCellValue("");
+            row.createCell(10).setCellValue("");
+            row.createCell(11).setCellValue("");
+        }
+
+        row.createCell(12).setCellValue(
+                customer.getMembership() != null ? customer.getMembership().getName().toString() : "");
     }
 }

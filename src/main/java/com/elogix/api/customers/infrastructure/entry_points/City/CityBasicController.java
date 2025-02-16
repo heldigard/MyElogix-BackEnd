@@ -1,4 +1,4 @@
-package com.elogix.api.customers.infrastructure.entry_points.City;
+package com.elogix.api.customers.infrastructure.entry_points.city;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

@@ -80,7 +80,7 @@ public abstract class GenericBasicController<T extends GenericBasicEntity, G ext
     public ResponseEntity<ApiResponse<T>> findAll(
             @RequestParam(required = false) List<String> properties,
             @RequestParam(required = false) List<String> directions,
-            @RequestParam(required = false, defaultValue = "false") boolean includeDeleted) {
+            @RequestParam(defaultValue = "false") boolean includeDeleted) {
         List<Sort.Order> sortOrders = SortOrderMapper.createSortOrders(properties, directions);
         List<T> entities = useCase.findAll(sortOrders, includeDeleted);
         if (entities == null || entities.isEmpty()) {

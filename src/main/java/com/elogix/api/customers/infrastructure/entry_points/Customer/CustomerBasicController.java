@@ -1,4 +1,4 @@
-package com.elogix.api.customers.infrastructure.entry_points.Customer;
+package com.elogix.api.customers.infrastructure.entry_points.customer;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -3,6 +3,7 @@ package com.elogix.api.generics.domain.usecase;
 import java.util.List;
 
 import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
 
 import com.elogix.api.generics.domain.gateway.GenericBasicGateway;
 import com.elogix.api.generics.domain.model.GenericBasicEntity;
@@ -20,6 +21,7 @@ import lombok.RequiredArgsConstructor;
  * @param <G> The gateway type that extends GenericBasicGateway<T>, providing
  *            data access and persistence operations
  */
+@Service
 @RequiredArgsConstructor
 public abstract class GenericBasicUseCase<T extends GenericBasicEntity, G extends GenericBasicGateway<T>> {
 

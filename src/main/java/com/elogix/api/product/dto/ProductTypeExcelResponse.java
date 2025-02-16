@@ -1,21 +1,17 @@
 package com.elogix.api.product.dto;
 
-import com.elogix.api.product.infrastructure.repository.product_type.ProductTypeData;
-import lombok.*;
+import com.elogix.api.generics.infrastructure.dto.ExcelResponse;
+import com.elogix.api.product.domain.model.ProductType;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
-@AllArgsConstructor
-public class ProductTypeExcelResponse {
-    @Builder.Default
-    List<ProductTypeData> productTypes = new ArrayList<ProductTypeData>();
-    @Builder.Default
-    Set<String> errors = new HashSet<>();
+@SuppressWarnings("unchecked")
+public class ProductTypeExcelResponse extends ExcelResponse<ProductType> {
 }

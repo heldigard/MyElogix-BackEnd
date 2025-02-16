@@ -9,7 +9,6 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.elogix.api.authentication.config.JwtProperties;
 import com.elogix.api.authentication.domain.model.UserDetailsImpl;
 import com.elogix.api.authentication.infrastructure.exception.JwtRefreshException;
@@ -17,6 +16,7 @@ import com.elogix.api.authentication.infrastructure.exception.JwtTokenException;
 import com.elogix.api.authentication.infrastructure.repository.JwtTokenProvider;
 import com.elogix.api.authentication.infrastructure.repository.token.TokenGatewayImpl;
 import com.elogix.api.authentication.infrastructure.repository.userdetails.UserDetailsServiceImpl;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -47,6 +47,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             String token = authHeader.substring(7);
+
+            if (!jwtTokenProvider.validateAccessToken(token)) {
+                throw new JwtTokenException(token, "Access token expired");
+            }
+
             String username = jwtTokenProvider.extractUsername(token);
 
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {

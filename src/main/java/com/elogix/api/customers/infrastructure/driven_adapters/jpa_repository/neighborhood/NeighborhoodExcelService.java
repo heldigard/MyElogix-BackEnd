@@ -1,42 +1,39 @@
 package com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.neighborhood;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.util.List;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
 
+import com.elogix.api.customers.domain.model.Neighborhood;
+import com.elogix.api.customers.domain.model.gateways.NeighborhoodGateway;
+import com.elogix.api.customers.domain.usecase.NeighborhoodUseCase;
 import com.elogix.api.customers.infrastructure.entry_points.dto.NeighborhoodExcelResponse;
-import com.elogix.api.customers.infrastructure.helpers.Neighborhood.NeighborhoodExportExcelHelper;
-import com.elogix.api.customers.infrastructure.helpers.Neighborhood.NeighborhoodImportExcelHelper;
-
-import lombok.AllArgsConstructor;
+import com.elogix.api.customers.infrastructure.helpers.neighborhood.NeighborhoodExportExcelHelper;
+import com.elogix.api.customers.infrastructure.helpers.neighborhood.NeighborhoodImportExcelHelper;
+import com.elogix.api.generics.infrastructure.helpers.excel.GenericExcelService;
+import com.elogix.api.shared.infraestructure.helpers.mappers.SortOrderMapper;
 
 @Component
-@AllArgsConstructor
-public class NeighborhoodExcelService {
-    private final NeighborhoodDataJpaRepository repository;
-    private final NeighborhoodImportExcelHelper importExcelHelper;
-    private final NeighborhoodExportExcelHelper exportExcelHelper;
+public class NeighborhoodExcelService
+        extends GenericExcelService<Neighborhood, NeighborhoodExcelResponse, NeighborhoodGateway, NeighborhoodUseCase> {
 
-    public NeighborhoodExcelResponse save(MultipartFile file) {
-        NeighborhoodExcelResponse neighborhoodsResponse = new NeighborhoodExcelResponse();
-        try {
-            neighborhoodsResponse = importExcelHelper.excelToNeighborhoods(file.getInputStream());
-            repository.saveAll(neighborhoodsResponse.getNeighborhoods());
-        } catch (IOException e) {
-            neighborhoodsResponse.getErrors().add(e.getMessage());
-            throw new RuntimeException("fail to store excel data: " + e.getMessage());
-        }
-
-        return neighborhoodsResponse;
+    public NeighborhoodExcelService(
+            NeighborhoodUseCase useCase,
+            NeighborhoodImportExcelHelper importExcelHelper,
+            NeighborhoodExportExcelHelper exportExcelHelper) {
+        super(useCase, importExcelHelper, exportExcelHelper);
     }
 
-    public ByteArrayInputStream exportExcelFile() {
-        List<NeighborhoodData> neighborhoods = repository.findAll();
+    @Override
+    protected NeighborhoodExcelResponse createResponse() {
+        return new NeighborhoodExcelResponse();
+    }
 
-        ByteArrayInputStream in = exportExcelHelper.neighborhoodsToExcel(neighborhoods);
-        return in;
+    @Override
+    protected List<Sort.Order> getSortOrders() {
+        return SortOrderMapper.createSortOrders(
+                List.of("name"),
+                List.of("asc"));
     }
 }

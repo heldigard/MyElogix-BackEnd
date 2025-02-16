@@ -20,8 +20,6 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @MappedSuperclass
 public abstract class GenericNamedBasicData extends GenericEntityData {
-
-    @NotBlank(message = "Name cannot be blank")
     @Size(max = 100, message = "Name cannot exceed 100 characters")
     @Column(length = 100)
     private String name;

@@ -1,25 +1,18 @@
 package com.elogix.api.product.infrastructure.helper;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.time.Instant;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 import com.elogix.api.delivery_orders.domain.model.EStatus;
 import com.elogix.api.delivery_orders.domain.model.Status;
 import com.elogix.api.delivery_orders.domain.usecase.StatusUseCase;
+import com.elogix.api.generics.infrastructure.helpers.excel.GenericImportExcelHelper;
 import com.elogix.api.product.domain.model.Product;
 import com.elogix.api.product.domain.model.ProductType;
 import com.elogix.api.product.domain.usecase.ProductTypeUseCase;
@@ -28,115 +21,76 @@ import com.elogix.api.product.dto.ProductExcelResponse;
 import com.elogix.api.shared.infraestructure.helpers.ExcelHelper;
 import com.elogix.api.shared.infraestructure.helpers.UpdateUtils;
 import com.elogix.api.shared.infraestructure.helpers.mappers.SortOrderMapper;
-import com.elogix.api.users.domain.model.UserBasic;
-
-import lombok.AllArgsConstructor;
 
 @Component
-@AllArgsConstructor
-public class ProductImportExcelHelper {
-    private final ExcelHelper excelHelper;
+public class ProductImportExcelHelper extends GenericImportExcelHelper<Product, ProductExcelResponse> {
     private final ProductUseCase useCase;
     private final ProductTypeUseCase productTypeUseCase;
     private final StatusUseCase statusUseCase;
-    private final UpdateUtils updateUtils;
 
-    public ProductExcelResponse excelToProducts(InputStream inputStream) {
-        ProductExcelResponse response = new ProductExcelResponse();
+    private Map<String, ProductType> typeMap;
+    private Map<String, Status> statusMap;
 
-        try {
-            Workbook workbook = new XSSFWorkbook(inputStream);
-            Sheet sheet = workbook.getSheetAt(0);
-            Iterator<Row> rows = sheet.iterator();
-
-            Set<String> referenceList = new HashSet<>();
-            Map<Integer, String> mapColumns = excelHelper.mapColumns(rows.next());
-
-            List<String> properties = List.of("reference");
-            List<String> directions = List.of("asc");
-            List<Sort.Order> sortOrders = SortOrderMapper.createSortOrders(properties, directions);
-            List<Product> existingList = useCase.findAll(sortOrders, false);
-            Map<String, Product> mappedProductReferences = excelHelper.mapEntities(existingList,
-                    Product::getReference);
-
-            properties = List.of("name");
-            sortOrders = SortOrderMapper.createSortOrders(properties, directions);
-            List<ProductType> existingProductTypes = productTypeUseCase.findAll(sortOrders, false);
-            Map<String, ProductType> mappedProductTypeNames = excelHelper.mapEntities(existingProductTypes,
-                    ProductType::getName);
-
-            properties = List.of("name");
-            sortOrders = SortOrderMapper.createSortOrders(properties, directions);
-            List<Status> existingStatuses = statusUseCase.findAll(sortOrders, false);
-            Map<String, Status> mappedStatusNames = excelHelper.mapEntities(existingStatuses,
-                    data -> data.getName().toString());
-
-            UserBasic currentUser = updateUtils.getCurrentUser();
-            int numOfNonEmptyCells = excelHelper.getNumberOfNonEmptyCells(sheet, 0);
-
-            for (int rowIndex = 0; rowIndex < numOfNonEmptyCells - 1; rowIndex++) {
-                Row currentRow = rows.next();
-
-                String cellValue = excelHelper.getCleanCellValue(currentRow.getCell(0), true);
-                if (referenceList.contains(cellValue)) {
-                    continue;
-                }
-
-                Product product;
-                if (mappedProductReferences.containsKey(cellValue)) {
-                    product = mappedProductReferences.get(cellValue);
-                    product.setUpdatedAt(Instant.now());
-                    product.setUpdatedBy(currentUser);
-                } else {
-                    product = Product.builder()
-                            .createdAt(Instant.now())
-                            .createdBy(currentUser)
-                            .isActive(true)
-                            .hits(0L)
-                            .build();
-                }
-
-                Iterator<Cell> cellsInRow = currentRow.iterator();
-
-                while (cellsInRow.hasNext()) {
-                    Cell currentCell = cellsInRow.next();
-                    int cellIdx = currentCell.getColumnIndex();
-                    product = _setupProductFromCell(
-                            cellIdx,
-                            currentCell,
-                            product,
-                            response.getErrors(),
-                            mapColumns,
-                            mappedProductTypeNames,
-                            mappedStatusNames);
-                }
-
-                if (!referenceList.contains(product.getReference())) {
-                    response.getProducts().add(product);
-                    referenceList.add(product.getReference());
-                }
-            }
-
-            workbook.close();
-
-            return response;
-
-        } catch (IOException e) {
-            response.getErrors().add(e.getMessage());
-            throw new RuntimeException("fail to parse Excel file: " + e.getMessage());
-        }
+    public ProductImportExcelHelper(
+            ExcelHelper excelHelper,
+            UpdateUtils updateUtils,
+            ProductUseCase useCase,
+            ProductTypeUseCase productTypeUseCase,
+            StatusUseCase statusUseCase) {
+        super(excelHelper, updateUtils);
+        this.useCase = useCase;
+        this.productTypeUseCase = productTypeUseCase;
+        this.statusUseCase = statusUseCase;
     }
 
-    private Product _setupProductFromCell(
+    private void initializeMaps() {
+        List<Sort.Order> sortOrders = SortOrderMapper.createSortOrders(
+                List.of("name"),
+                List.of("asc"));
+
+        // Cargar tipos de producto
+        List<ProductType> types = productTypeUseCase.findAll(sortOrders, false);
+        this.typeMap = excelHelper.mapEntities(types, ProductType::getName);
+
+        // Cargar estados
+        List<Status> statuses = statusUseCase.findAll(sortOrders, false);
+        this.statusMap = excelHelper.mapEntities(statuses,
+                status -> status.getName().toString());
+    }
+
+    @Override
+    protected List<Product> findAllEntities() {
+        initializeMaps();
+        return useCase.findAll(getSortOrders(), false);
+    }
+
+    @Override
+    protected String getEntityIdentifier(Product entity) {
+        return entity.getReference();
+    }
+
+    @Override
+    protected Product createEntity() {
+        return Product.builder()
+                .createdAt(Instant.now())
+                .createdBy(updateUtils.getCurrentUser())
+                .isActive(true)
+                .hits(0L)
+                .build();
+    }
+
+    @Override
+    protected Product processCell(
             int cellIdx,
             Cell cell,
             Product product,
-            Set<String> errors,
-            Map<Integer, String> mapColumns,
-            Map<String, ProductType> mappedProductTypeNames,
-            Map<String, Status> mappedStatusNames) {
-        final String cellValue = excelHelper.getCleanCellValue(cell, true);
+            ProductExcelResponse response,
+            Map<Integer, String> mapColumns) {
+        if (cell == null) {
+            return product;
+        }
 
+        final String cellValue = excelHelper.getCleanCellValue(cell, true);
         String columnName = mapColumns.get(cellIdx);
 
         if (cellValue.isEmpty() || cellValue.contains("N/A") || cellValue.equals("0")) {
@@ -148,38 +102,87 @@ public class ProductImportExcelHelper {
                 if (product.getReference() == null) {
                     product.setReference(cellValue);
                 }
-
-                return product;
+                break;
 
             case "Descripcion":
                 product.setDescription(cellValue);
-
-                return product;
+                break;
 
             case "SubCategoria":
-                if (mappedProductTypeNames.containsKey(cellValue)) {
-                    product.setType(mappedProductTypeNames.get(cellValue));
-                } else {
-                    errors.add("Error: " + cellValue + " SubCategoria no existe en BD, se usara OTROS" +
-                            " productId: " + product.getReference());
-                    product.setType(mappedProductTypeNames.get("OTROS"));
-                }
-
-                return product;
+                setProductType(product, cellValue, response);
+                break;
 
             case "Estado":
-                product.setStatus(mappedStatusNames.get(cellValue));
-                if (product.getStatus().getName() == EStatus.LOW_STOCK) {
-                    product.setLowStock(true);
-                }
-                if (product.getStatus().getName() == EStatus.OUT_OF_STOCK) {
-                    product.setActive(false);
-                }
+                setProductStatus(product, cellValue);
+                break;
+        }
 
-                return product;
+        return product;
+    }
 
-            default:
-                return product;
+    @Override
+    protected Set<String> getRequiredColumns() {
+        return Set.of("Referencia", "Descripcion", "SubCategoria", "Estado");
+    }
+
+    @Override
+    protected ProductExcelResponse createResponse() {
+        return new ProductExcelResponse();
+    }
+
+    @Override
+    protected List<Sort.Order> getSortOrders() {
+        return SortOrderMapper.createSortOrders(
+                List.of("reference"),
+                List.of("asc"));
+    }
+
+    @Override
+    protected boolean isIdentifierColumn(String columnName) {
+        return "Referencia".equals(columnName);
+    }
+
+    @Override
+    protected boolean isValidEntity(Product entity, Set<String> processedItems, ProductExcelResponse response) {
+        if (entity == null || entity.getReference() == null || entity.getReference().isEmpty()) {
+            response.addError("Error: La referencia es requerida");
+            return false;
+        }
+
+        if (processedItems.contains(entity.getReference())) {
+            response.addError("Error: La referencia " + entity.getReference() + " está duplicada");
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    protected void addToProcessedItems(Product entity, Set<String> processedItems) {
+        if (entity != null && entity.getReference() != null) {
+            processedItems.add(entity.getReference());
+        }
+    }
+
+    private void setProductType(Product product, String typeName, ProductExcelResponse response) {
+        if (typeMap.containsKey(typeName)) {
+            product.setType(typeMap.get(typeName));
+        } else {
+            response.addError("Error: " + typeName + " SubCategoria no existe en BD, se usara OTROS" +
+                    " productId: " + product.getReference());
+            product.setType(typeMap.get("OTROS"));
+        }
+    }
+
+    private void setProductStatus(Product product, String statusName) {
+        Status status = statusMap.get(statusName);
+        product.setStatus(status);
+
+        if (status.getName() == EStatus.LOW_STOCK) {
+            product.setLowStock(true);
+        }
+        if (status.getName() == EStatus.OUT_OF_STOCK) {
+            product.setActive(false);
         }
     }
 }

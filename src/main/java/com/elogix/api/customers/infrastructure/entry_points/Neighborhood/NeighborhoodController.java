@@ -1,4 +1,4 @@
-package com.elogix.api.customers.infrastructure.entry_points.Neighborhood;
+package com.elogix.api.customers.infrastructure.entry_points.neighborhood;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

@@ -41,5 +41,4 @@ public class CustomerUseCaseConfig {
     public CustomerUseCase customerUseCase(CustomerGateway gateway) {
         return new CustomerUseCase(gateway);
     }
-
 }

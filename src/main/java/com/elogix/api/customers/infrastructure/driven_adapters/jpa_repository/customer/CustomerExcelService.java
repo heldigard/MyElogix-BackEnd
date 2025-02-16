@@ -1,42 +1,39 @@
 package com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.customer;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.util.List;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
 
+import com.elogix.api.customers.domain.model.Customer;
+import com.elogix.api.customers.domain.model.gateways.CustomerGateway;
+import com.elogix.api.customers.domain.usecase.CustomerUseCase;
 import com.elogix.api.customers.infrastructure.entry_points.dto.CustomerExcelResponse;
-import com.elogix.api.customers.infrastructure.helpers.Customer.CustomerExportExcelHelper;
-import com.elogix.api.customers.infrastructure.helpers.Customer.CustomerImportExcelHelper;
-
-import lombok.AllArgsConstructor;
+import com.elogix.api.customers.infrastructure.helpers.customer.CustomerImportExcelHelper;
+import com.elogix.api.generics.infrastructure.helpers.excel.GenericExcelService;
+import com.elogix.api.generics.infrastructure.helpers.excel.GenericExportExcelHelper;
+import com.elogix.api.shared.infraestructure.helpers.mappers.SortOrderMapper;
 
 @Component
-@AllArgsConstructor
-public class CustomerExcelService {
-    private final CustomerDataJpaRepository repository;
-    private final CustomerImportExcelHelper importExcelHelper;
-    private final CustomerExportExcelHelper exportExcelHelper;
+public class CustomerExcelService
+        extends GenericExcelService<Customer, CustomerExcelResponse, CustomerGateway, CustomerUseCase> {
 
-    public CustomerExcelResponse importExcelFile(MultipartFile file) {
-        CustomerExcelResponse customersResponse = new CustomerExcelResponse();
-        try {
-            customersResponse = importExcelHelper.excelToCustomers(file.getInputStream());
-            repository.saveAll(customersResponse.getCustomers());
-        } catch (IOException e) {
-            customersResponse.getErrors().add(e.getMessage());
-            throw new RuntimeException("fail to store excel data: " + e.getMessage());
-        }
-
-        return customersResponse;
+    public CustomerExcelService(
+            CustomerUseCase useCase,
+            CustomerImportExcelHelper importExcelHelper,
+            GenericExportExcelHelper<Customer> exportExcelHelper) {
+        super(useCase, importExcelHelper, exportExcelHelper);
     }
 
-    public ByteArrayInputStream exportExcelFile() {
-        List<CustomerData> customers = repository.findAll();
+    @Override
+    protected CustomerExcelResponse createResponse() {
+        return new CustomerExcelResponse();
+    }
 
-        ByteArrayInputStream in = exportExcelHelper.customersToExcel(customers);
-        return in;
+    @Override
+    protected List<Sort.Order> getSortOrders() {
+        return SortOrderMapper.createSortOrders(
+                List.of("documentNumber", "name"),
+                List.of("asc", "asc"));
     }
 }
