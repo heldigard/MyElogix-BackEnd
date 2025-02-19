@@ -32,4 +32,11 @@ public class DocumentType extends GenericNamed {
     public int hashCode() {
         return super.hashCode();
     }
+
+    @Override
+    public String toString() {
+        return "DocumentType{" +
+                super.toString() +
+                '}';
+    }
 }

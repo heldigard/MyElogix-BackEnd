@@ -2,9 +2,9 @@ package com.elogix.api.customers.domain.model;
 
 import java.util.Objects;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.elogix.api.customers.application.config.EMembershipDeserializer;
 import com.elogix.api.generics.domain.model.GenericEntity;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -43,5 +43,14 @@ public class Membership extends GenericEntity {
 
     public Membership() {
         super();
+    }
+
+    @Override
+    public String toString() {
+        return "Membership{" +
+                super.toString() +
+                ", name=" + name +
+                ", description='" + description + '\'' +
+                '}';
     }
 }

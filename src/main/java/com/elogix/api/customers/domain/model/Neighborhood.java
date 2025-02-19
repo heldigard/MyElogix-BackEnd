@@ -40,4 +40,13 @@ public class Neighborhood extends GenericNamed {
     public Neighborhood() {
         super();
     }
+
+    @Override
+    public String toString() {
+        return "Neighborhood{" +
+                super.toString() +
+                ", city=" + city +
+                ", deliveryZone=" + deliveryZone +
+                '}';
+    }
 }

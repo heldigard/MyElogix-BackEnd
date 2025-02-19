@@ -37,4 +37,12 @@ public class ProductCategory extends GenericNamed {
     public int hashCode() {
         return java.util.Objects.hash(super.hashCode(), description);
     }
+
+    @Override
+    public String toString() {
+        return "ProductCategory{" +
+                super.toString() +
+                ", description='" + description + '\'' +
+                '}';
+    }
 }

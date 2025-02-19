@@ -32,4 +32,11 @@ public class CityBasic extends GenericNamedBasic {
     public int hashCode() {
         return super.hashCode();
     }
+
+    @Override
+    public String toString() {
+        return "CityBasic{" +
+                super.toString() +
+                '}';
+    }
 }

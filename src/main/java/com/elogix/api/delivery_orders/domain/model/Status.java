@@ -9,7 +9,8 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 /**
- * DTO for {@link com.elogix.api.delivery_orders.infrastructure.driven_adapters.jpa_repository.status.StatusData}
+ * DTO for
+ * {@link com.elogix.api.delivery_orders.infrastructure.driven_adapters.jpa_repository.status.StatusData}
  */
 
 @Getter
@@ -38,5 +39,14 @@ public class Status extends GenericBasicEntity {
 
     public Status() {
         super();
+    }
+
+    @Override
+    public String toString() {
+        return "Status{" +
+                super.toString() +
+                ", name=" + (name != null ? name : "null") +
+                ", description='" + description + '\'' +
+                '}';
     }
 }

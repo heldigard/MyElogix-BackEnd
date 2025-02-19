@@ -262,11 +262,16 @@ public class DeliveryOrderGatewayImpl extends
     @Override
     @Transactional
     public DeliveryOrder add(DeliveryOrder order) {
+        log.debug("Adding new DeliveryOrder: {}", order);
+        // Then manage other associations
         manageAssociations(order);
+
+        // Initialize the rest of the order status
         initializeOrderStatus(order);
 
         // Save delivery order
         DeliveryOrder saved = saveDeliveryOrder(order);
+
         // Update statistics
         updateStatistics(saved);
 

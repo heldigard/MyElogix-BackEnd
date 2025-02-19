@@ -7,7 +7,8 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 /**
- * DTO for {@link com.elogix.api.delivery_orders.infrastructure.driven_adapters.jpa_repository.metric_unit.MetricUnitData}
+ * DTO for
+ * {@link com.elogix.api.delivery_orders.infrastructure.driven_adapters.jpa_repository.metric_unit.MetricUnitData}
  */
 
 @Getter
@@ -16,5 +17,12 @@ import lombok.experimental.SuperBuilder;
 public class MetricUnit extends GenericNamed {
     public MetricUnit() {
         super();
+    }
+
+    @Override
+    public String toString() {
+        return "MetricUnit{" +
+                super.toString() +
+                '}';
     }
 }

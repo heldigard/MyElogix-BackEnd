@@ -38,6 +38,6 @@ public abstract class GenericStatus extends GenericEntity {
     @Override
     public String toString() {
         return super.toString() +
-                ", status=" + status.getName();
+                ", status=" + status;
     }
 }

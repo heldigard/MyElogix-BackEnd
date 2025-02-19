@@ -94,3 +94,4 @@ src/main/resources/application.yml
 # Environment variables
 .env
 *.env
+*.ffs_db

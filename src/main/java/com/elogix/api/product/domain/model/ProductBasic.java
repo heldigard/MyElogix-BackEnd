@@ -1,10 +1,12 @@
 package com.elogix.api.product.domain.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
+
 import com.elogix.api.delivery_orders.domain.model.Status;
 import com.elogix.api.generics.domain.model.GenericEntity;
 import com.elogix.api.product.infrastructure.repository.product_basic.ProductBasicData;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -48,16 +50,30 @@ public class ProductBasic extends GenericEntity {
         ProductBasic that = (ProductBasic) obj;
         return isActive == that.isActive &&
                 isLowStock == that.isLowStock &&
-                java.util.Objects.equals(reference, that.reference) &&
-                java.util.Objects.equals(description, that.description) &&
-                java.util.Objects.equals(type, that.type) &&
-                java.util.Objects.equals(status, that.status) &&
-                java.util.Objects.equals(hits, that.hits);
+                Objects.equals(reference, that.reference) &&
+                Objects.equals(description, that.description) &&
+                Objects.equals(type, that.type) &&
+                Objects.equals(status, that.status) &&
+                Objects.equals(hits, that.hits);
     }
 
     @Override
     public int hashCode() {
-        return java.util.Objects.hash(super.hashCode(), reference, description, type, status, hits, isActive,
+        return Objects.hash(super.hashCode(), reference, description, type, status, hits, isActive,
                 isLowStock);
+    }
+
+    @Override
+    public String toString() {
+        return "ProductBasic{" +
+                super.toString() +
+                ", reference='" + reference + '\'' +
+                ", description='" + description + '\'' +
+                ", type=" + type +
+                ", status=" + status +
+                ", hits=" + hits +
+                ", isActive=" + isActive +
+                ", isLowStock=" + isLowStock +
+                '}';
     }
 }

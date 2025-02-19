@@ -4,8 +4,8 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.elogix.api.generics.domain.model.GenericNamed;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -64,5 +64,20 @@ public class Customer extends GenericNamed {
 
     public Customer() {
         super();
+    }
+
+    @Override
+    public String toString() {
+        return "Customer{" +
+                super.toString() +
+                ", documentNumber='" + documentNumber + '\'' +
+                ", documentType=" + documentType +
+                ", branchOfficeList=[size=" + (branchOfficeList != null ? branchOfficeList.size() : 0) + "]" +
+                ", email='" + email + '\'' +
+                ", phone='" + phone + '\'' +
+                ", membership=" + membership +
+                ", hits=" + hits +
+                ", isActive=" + isActive +
+                '}';
     }
 }

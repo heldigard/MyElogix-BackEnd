@@ -1,5 +1,7 @@
 package com.elogix.api.delivery_orders.domain.model;
 
+import java.util.Objects;
+
 import com.elogix.api.generics.domain.model.GenericNamed;
 
 import lombok.Getter;
@@ -30,11 +32,19 @@ public class MeasureDetail extends GenericNamed {
         if (!super.equals(obj))
             return false;
         MeasureDetail that = (MeasureDetail) obj;
-        return java.util.Objects.equals(description, that.description);
+        return Objects.equals(description, that.description);
     }
 
     @Override
     public int hashCode() {
-        return java.util.Objects.hash(super.hashCode(), description);
+        return Objects.hash(super.hashCode(), description);
+    }
+
+    @Override
+    public String toString() {
+        return "MeasureDetail{" +
+                super.toString() +
+                ", description='" + description + '\'' +
+                '}';
     }
 }

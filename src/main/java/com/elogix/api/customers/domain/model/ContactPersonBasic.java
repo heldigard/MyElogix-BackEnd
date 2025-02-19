@@ -40,4 +40,13 @@ public class ContactPersonBasic extends GenericNamedBasic {
     public ContactPersonBasic() {
         super();
     }
+
+    @Override
+    public String toString() {
+        return "ContactPersonBasic{" +
+                super.toString() +
+                ", mobileNumberPrimary='" + mobileNumberPrimary + '\'' +
+                ", mobileNumberSecondary='" + mobileNumberSecondary + '\'' +
+                '}';
+    }
 }

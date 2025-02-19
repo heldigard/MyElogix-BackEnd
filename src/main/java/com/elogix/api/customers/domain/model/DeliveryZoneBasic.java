@@ -7,7 +7,8 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 /**
- * DTO for {@link com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.delivery_zone_basic.DeliveryZoneBasicData}
+ * DTO for
+ * {@link com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.delivery_zone_basic.DeliveryZoneBasicData}
  */
 
 @Getter
@@ -16,5 +17,12 @@ import lombok.experimental.SuperBuilder;
 public class DeliveryZoneBasic extends GenericNamedBasic {
     public DeliveryZoneBasic() {
         super();
+    }
+
+    @Override
+    public String toString() {
+        return "DeliveryZoneBasic{" +
+                super.toString() +
+                '}';
     }
 }

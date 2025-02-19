@@ -3,8 +3,8 @@ package com.elogix.api.generics.domain.model;
 import java.time.Instant;
 import java.util.Objects;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.elogix.api.users.domain.model.UserBasic;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -68,8 +68,8 @@ public abstract class GenericEntity extends GenericBasicEntity {
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 ", deletedAt=" + deletedAt +
-                ", createdBy=" + (createdBy != null ? createdBy.getId() : null) +
-                ", updatedBy=" + (updatedBy != null ? updatedBy.getId() : null) +
-                ", deletedBy=" + (deletedBy != null ? deletedBy.getId() : null);
+                ", createdBy=" + (createdBy != null ? createdBy.getId() : "null") +
+                ", updatedBy=" + (updatedBy != null ? updatedBy.getId() : "null") +
+                ", deletedBy=" + (deletedBy != null ? deletedBy.getId() : "null");
     }
 }

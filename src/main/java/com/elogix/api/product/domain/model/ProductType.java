@@ -1,8 +1,10 @@
 package com.elogix.api.product.domain.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
+
 import com.elogix.api.generics.domain.model.GenericNamed;
 import com.elogix.api.product.infrastructure.repository.product_type.ProductTypeData;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -38,12 +40,22 @@ public class ProductType extends GenericNamed {
             return false;
         ProductType that = (ProductType) obj;
         return isMeasurable == that.isMeasurable &&
-                java.util.Objects.equals(description, that.description) &&
-                java.util.Objects.equals(category, that.category);
+                Objects.equals(description, that.description) &&
+                Objects.equals(category, that.category);
     }
 
     @Override
     public int hashCode() {
-        return java.util.Objects.hash(super.hashCode(), description, category, isMeasurable);
+        return Objects.hash(super.hashCode(), description, category, isMeasurable);
+    }
+
+    @Override
+    public String toString() {
+        return "ProductType{" +
+                super.toString() +
+                ", description='" + description + '\'' +
+                ", category=" + category +
+                ", isMeasurable=" + isMeasurable +
+                '}';
     }
 }

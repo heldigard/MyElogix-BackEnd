@@ -64,8 +64,8 @@ public abstract class GenericBasicEntity implements Serializable {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "(id=" + id +
+        return "id=" + (id != null ? id : "null") +
                 ", version=" + version +
-                ", isDeleted=" + isDeleted + ")";
+                ", isDeleted=" + isDeleted;
     }
 }

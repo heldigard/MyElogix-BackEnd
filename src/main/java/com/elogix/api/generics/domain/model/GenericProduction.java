@@ -3,10 +3,9 @@ package com.elogix.api.generics.domain.model;
 import java.time.Instant;
 import java.util.Objects;
 
+import com.elogix.api.users.domain.model.UserBasic;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.elogix.api.delivery_orders.domain.model.Status;
-import com.elogix.api.users.domain.model.UserBasic;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -60,8 +59,6 @@ public abstract class GenericProduction extends GenericStatus {
     private UserBasic cancelledBy;
     private UserBasic pausedBy;
 
-    private Status status;
-
     protected GenericProduction() {
         super();
         this.isPending = true;
@@ -91,25 +88,37 @@ public abstract class GenericProduction extends GenericStatus {
                 Objects.equals(finishedBy, that.finishedBy) &&
                 Objects.equals(deliveredBy, that.deliveredBy) &&
                 Objects.equals(cancelledBy, that.cancelledBy) &&
-                Objects.equals(pausedBy, that.pausedBy) &&
-                Objects.equals(status, that.status);
+                Objects.equals(pausedBy, that.pausedBy);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), isPending, isProduction, isFinished, isDelivered, isCancelled, isPaused,
                 productionAt, finishedAt, deliveredAt, cancelledAt, pausedAt, productionBy, finishedBy, deliveredBy,
-                cancelledBy, pausedBy, status);
+                cancelledBy, pausedBy);
     }
 
     @Override
     public String toString() {
         return super.toString() +
+        // Status flags
                 ", isPending=" + isPending +
                 ", isProduction=" + isProduction +
                 ", isFinished=" + isFinished +
                 ", isDelivered=" + isDelivered +
                 ", isCancelled=" + isCancelled +
-                ", isPaused=" + isPaused;
+                ", isPaused=" + isPaused +
+                // Timestamps
+                ", productionAt=" + productionAt +
+                ", finishedAt=" + finishedAt +
+                ", deliveredAt=" + deliveredAt +
+                ", cancelledAt=" + cancelledAt +
+                ", pausedAt=" + pausedAt +
+                // Users
+                ", productionBy=" + (productionBy != null ? productionBy.getId() : "null") +
+                ", finishedBy=" + (finishedBy != null ? finishedBy.getId() : "null") +
+                ", deliveredBy=" + (deliveredBy != null ? deliveredBy.getId() : "null") +
+                ", cancelledBy=" + (cancelledBy != null ? cancelledBy.getId() : "null") +
+                ", pausedBy=" + (pausedBy != null ? pausedBy.getId() : "null");
     }
 }

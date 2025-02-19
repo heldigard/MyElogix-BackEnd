@@ -5,14 +5,14 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.elogix.api.customers.domain.model.BranchOffice;
 import com.elogix.api.customers.domain.model.Customer;
 import com.elogix.api.customers.domain.model.DeliveryZoneBasic;
 import com.elogix.api.generics.domain.model.GenericProduction;
 import com.elogix.api.product_order.domain.model.ProductOrder;
 import com.elogix.api.users.domain.model.UserBasic;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -69,5 +69,21 @@ public class DeliveryOrder extends GenericProduction {
     public int hashCode() {
         return Objects.hash(super.hashCode(), customer, branchOffice, deliveryZone, productOrders,
                 generalObservations, totalPrice, billedAt, billedBy, isBilled);
+    }
+
+    @Override
+    public String toString() {
+        return "DeliveryOrder{" +
+                super.toString() +
+                ", customer=" + customer +
+                ", branchOffice=" + branchOffice +
+                ", deliveryZone=" + deliveryZone +
+                ", productOrders=[size=" + (productOrders != null ? productOrders.size() : 0) + "]" +
+                ", generalObservations='" + generalObservations + '\'' +
+                ", totalPrice=" + totalPrice +
+                ", billedAt=" + billedAt +
+                ", billedBy=" + billedBy +
+                ", isBilled=" + isBilled +
+                '}';
     }
 }

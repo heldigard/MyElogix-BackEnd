@@ -2,13 +2,13 @@ package com.elogix.api.product_order.domain.model;
 
 import java.util.Objects;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.elogix.api.delivery_orders.domain.model.MeasureDetail;
 import com.elogix.api.delivery_orders.domain.model.MetricUnit;
 import com.elogix.api.generics.domain.model.GenericProduction;
 import com.elogix.api.product.domain.model.ProductBasic;
 import com.elogix.api.product_order.infrastructure.repository.ProductOrderData;
 import com.elogix.api.shared.application.config.CustomDoubleDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -43,8 +43,10 @@ public class ProductOrder extends GenericProduction {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         ProductOrder that = (ProductOrder) o;
         return Objects.equals(product, that.product) &&
                 Objects.equals(amount, that.amount) &&
@@ -64,5 +66,20 @@ public class ProductOrder extends GenericProduction {
 
     public ProductOrder() {
         super();
+    }
+
+    @Override
+    public String toString() {
+        return "ProductOrder{" +
+                super.toString() +
+                ", product=" + (product != null ? product.getId() : "null") +
+                ", amount=" + amount +
+                ", measure1=" + measure1 +
+                ", measure2=" + measure2 +
+                ", metricUnit=" + (metricUnit != null ? metricUnit.getId() : "null") +
+                ", measureDetail=" + (measureDetail != null ? measureDetail.getId() : "null") +
+                ", observation='" + observation + '\'' +
+                ", deliveryOrderId=" + (deliveryOrderId != null ? deliveryOrderId : "null") +
+                '}';
     }
 }
