@@ -7,10 +7,11 @@ import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.ParamDef;
 import org.hibernate.annotations.SQLDelete;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.elogix.api.customers.application.config.EMembershipDeserializer;
+import com.elogix.api.customers.application.config.MembershipUseCaseConfig;
 import com.elogix.api.customers.domain.model.EMembership;
 import com.elogix.api.generics.infrastructure.repository.GenericEntity.GenericEntityData;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -29,8 +30,8 @@ import lombok.experimental.SuperBuilder;
 @Setter
 @ToString
 @SQLDelete(sql = "UPDATE memberships SET is_deleted = true WHERE id=?")
-@FilterDef(name = "deletedMembershipFilter", parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
-@Filter(name = "deletedMembershipFilter", condition = "is_deleted = :isDeleted")
+@FilterDef(name = MembershipUseCaseConfig.DELETED_FILTER, parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
+@Filter(name = MembershipUseCaseConfig.DELETED_FILTER, condition = "is_deleted = :isDeleted")
 public class MembershipData extends GenericEntityData {
     @Enumerated(EnumType.STRING)
     @JsonDeserialize(using = EMembershipDeserializer.class)

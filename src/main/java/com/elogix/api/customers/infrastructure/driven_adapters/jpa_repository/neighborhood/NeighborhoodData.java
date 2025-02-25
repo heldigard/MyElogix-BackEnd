@@ -7,6 +7,7 @@ import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.ParamDef;
 import org.hibernate.annotations.SQLDelete;
 
+import com.elogix.api.customers.application.config.NeighborhoodUseCaseConfig;
 import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.city_basic.CityBasicData;
 import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.delivery_zone_basic.DeliveryZoneBasicData;
 import com.elogix.api.generics.infrastructure.repository.GenericNamed.GenericNamedData;
@@ -29,8 +30,8 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @Setter
 @SQLDelete(sql = "UPDATE neighborhoods SET is_deleted = true WHERE id=?")
-@FilterDef(name = "deletedNeighborhoodFilter", parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
-@Filter(name = "deletedNeighborhoodFilter", condition = "is_deleted = :isDeleted")
+@FilterDef(name = NeighborhoodUseCaseConfig.DELETED_FILTER, parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
+@Filter(name = NeighborhoodUseCaseConfig.DELETED_FILTER, condition = "is_deleted = :isDeleted")
 public class NeighborhoodData extends GenericNamedData {
     @NotBlank
     @Column(length = 50, nullable = false)

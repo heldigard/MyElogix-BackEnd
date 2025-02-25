@@ -8,6 +8,7 @@ import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.ParamDef;
 import org.hibernate.annotations.SQLDelete;
 
+import com.elogix.api.customers.application.config.CityUseCaseConfig;
 import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.neighborhood.NeighborhoodData;
 import com.elogix.api.generics.infrastructure.repository.GenericNamed.GenericNamedData;
 
@@ -30,8 +31,8 @@ import lombok.experimental.SuperBuilder;
 @Setter
 @ToString
 @SQLDelete(sql = "UPDATE cities SET is_deleted = true WHERE id=?")
-@FilterDef(name = "deletedCityFilter", parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
-@Filter(name = "deletedCityFilter", condition = "is_deleted = :isDeleted")
+@FilterDef(name = CityUseCaseConfig.DELETED_FILTER, parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
+@Filter(name = CityUseCaseConfig.DELETED_FILTER, condition = "is_deleted = :isDeleted")
 public class CityData extends GenericNamedData {
     @NotBlank
     @Column(unique = true, length = 25, nullable = false)

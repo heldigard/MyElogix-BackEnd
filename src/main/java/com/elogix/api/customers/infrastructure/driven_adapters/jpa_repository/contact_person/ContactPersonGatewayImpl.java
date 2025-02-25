@@ -3,10 +3,8 @@ package com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.c
 import com.elogix.api.customers.domain.model.ContactPerson;
 import com.elogix.api.customers.domain.model.gateways.ContactPersonGateway;
 import com.elogix.api.customers.infrastructure.helpers.mappers.ContactPersonMapper;
+import com.elogix.api.generics.config.GenericConfig;
 import com.elogix.api.generics.infrastructure.repository.GenericNamed.GenericNamedGatewayImpl;
-import com.elogix.api.shared.infraestructure.helpers.UpdateUtils;
-
-import jakarta.persistence.EntityManager;
 
 public class ContactPersonGatewayImpl
         extends
@@ -14,11 +12,7 @@ public class ContactPersonGatewayImpl
         implements ContactPersonGateway {
 
     public ContactPersonGatewayImpl(
-            ContactPersonDataJpaRepository repository,
-            ContactPersonMapper mapper,
-            EntityManager entityManager,
-            UpdateUtils updateUtils,
-            String deletedFilter) {
-        super(repository, mapper, entityManager, updateUtils, deletedFilter);
+            GenericConfig<ContactPerson, ContactPersonData, ContactPersonDataJpaRepository, ContactPersonMapper> config) {
+        super(config);
     }
 }

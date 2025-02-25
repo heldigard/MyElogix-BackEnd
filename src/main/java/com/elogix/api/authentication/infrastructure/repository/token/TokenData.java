@@ -8,6 +8,7 @@ import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.ParamDef;
 import org.hibernate.annotations.SQLDelete;
 
+import com.elogix.api.authentication.config.TokenUseCaseConfig;
 import com.elogix.api.authentication.domain.model.ETokenType;
 import com.elogix.api.generics.infrastructure.repository.GenericEntity.GenericEntityData;
 import com.elogix.api.users.infrastructure.driven_adapters.jpa_repository.user.UserData;
@@ -33,8 +34,8 @@ import lombok.experimental.SuperBuilder;
 @Setter
 @Table(name = "tokens")
 @SQLDelete(sql = "UPDATE tokens SET is_deleted = true WHERE id=?")
-@FilterDef(name = "deletedTokenFilter", parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
-@Filter(name = "deletedTokenFilter", condition = "is_deleted = :isDeleted")
+@FilterDef(name = TokenUseCaseConfig.DELETED_FILTER, parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
+@Filter(name = TokenUseCaseConfig.DELETED_FILTER, condition = "is_deleted = :isDeleted")
 @ToString
 public class TokenData extends GenericEntityData {
     @Column(name = "token", nullable = false)
@@ -60,6 +61,8 @@ public class TokenData extends GenericEntityData {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
+        if (!super.equals(o)) // Check parent class equality since we extend GenericEntityData
+            return false;
         TokenData tokenData = (TokenData) o;
         return isRevoked == tokenData.isRevoked &&
                 Arrays.equals(token, tokenData.token) &&
@@ -70,13 +73,26 @@ public class TokenData extends GenericEntityData {
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(type, isRevoked, user);
-        result = 31 * result + Arrays.hashCode(token);
-        result = 31 * result + Arrays.hashCode(refreshToken);
-        return result;
+        return Objects.hash(
+                super.hashCode(),
+                type,
+                isRevoked,
+                user,
+                Arrays.hashCode(token),
+                Arrays.hashCode(refreshToken));
     }
 
     public TokenData() {
         super();
+    }
+
+    @Override
+    public String toString() {
+        return "TokenData(super=" + super.toString() +
+                ", token=[PROTECTED]" +
+                ", refreshToken=[PROTECTED]" +
+                ", type=" + type +
+                ", isRevoked=" + isRevoked +
+                ", user=" + user + ")";
     }
 }

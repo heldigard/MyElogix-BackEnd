@@ -7,6 +7,7 @@ import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.ParamDef;
 import org.hibernate.annotations.SQLDelete;
 
+import com.elogix.api.customers.application.config.BranchOfficeCaseConfig;
 import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.city_basic.CityBasicData;
 import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.contact_person_basic.ContactPersonBasicData;
 import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.delivery_zone_basic.DeliveryZoneBasicData;
@@ -32,8 +33,8 @@ import lombok.experimental.SuperBuilder;
 @Setter
 @ToString
 @SQLDelete(sql = "UPDATE branch_offices SET is_deleted = true WHERE id=?")
-@FilterDef(name = "deletedBranchOfficeFilter", parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
-@Filter(name = "deletedBranchOfficeFilter", condition = "is_deleted = :isDeleted")
+@FilterDef(name = BranchOfficeCaseConfig.DELETED_FILTER, parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
+@Filter(name = BranchOfficeCaseConfig.DELETED_FILTER, condition = "is_deleted = :isDeleted")
 public class BranchOfficeData extends GenericEntityData {
     @Column(name = "customer_id")
     private Long customerId;

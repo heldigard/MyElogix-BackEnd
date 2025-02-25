@@ -9,6 +9,7 @@ import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.ParamDef;
 import org.hibernate.annotations.SQLDelete;
 
+import com.elogix.api.customers.application.config.ContactPersonUseCaseConfig;
 import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.branch_office.BranchOfficeData;
 import com.elogix.api.generics.infrastructure.repository.GenericNamed.GenericNamedData;
 
@@ -30,8 +31,8 @@ import lombok.experimental.SuperBuilder;
 @Setter
 @ToString
 @SQLDelete(sql = "UPDATE contact_people SET is_deleted = true WHERE id=?")
-@FilterDef(name = "deletedContactPersonFilter", parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
-@Filter(name = "deletedContactPersonFilter", condition = "is_deleted = :isDeleted")
+@FilterDef(name = ContactPersonUseCaseConfig.DELETED_FILTER, parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
+@Filter(name = ContactPersonUseCaseConfig.DELETED_FILTER, condition = "is_deleted = :isDeleted")
 public class ContactPersonData extends GenericNamedData {
     @Column(length = 15)
     private String mobileNumberPrimary;

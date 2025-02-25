@@ -72,13 +72,10 @@ public class ProductOrder extends GenericProduction {
     public String toString() {
         return "ProductOrder{" +
                 super.toString() +
-                ", product=" + (product != null ? product.getId() : "null") +
+                ", product=" + product +
                 ", amount=" + amount +
                 ", measure1=" + measure1 +
                 ", measure2=" + measure2 +
-                ", metricUnit=" + (metricUnit != null ? metricUnit.getId() : "null") +
-                ", measureDetail=" + (measureDetail != null ? measureDetail.getId() : "null") +
-                ", observation='" + observation + '\'' +
                 ", deliveryOrderId=" + (deliveryOrderId != null ? deliveryOrderId : "null") +
                 '}';
     }

@@ -68,10 +68,7 @@ public class ProductBasic extends GenericEntity {
         return "ProductBasic{" +
                 super.toString() +
                 ", reference='" + reference + '\'' +
-                ", description='" + description + '\'' +
                 ", type=" + type +
-                ", status=" + status +
-                ", hits=" + hits +
                 ", isActive=" + isActive +
                 ", isLowStock=" + isLowStock +
                 '}';

@@ -1,13 +1,16 @@
 package com.elogix.api.users.infrastructure.driven_adapters.jpa_repository.role;
 
+import java.util.Objects;
+
 import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.ParamDef;
 import org.hibernate.annotations.SQLDelete;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.elogix.api.generics.infrastructure.repository.GenericEntity.GenericEntityData;
+import com.elogix.api.users.application.config.RoleUseCaseConfig;
 import com.elogix.api.users.domain.model.ERole;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
@@ -27,8 +30,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @SQLDelete(sql = "UPDATE roles SET is_deleted = true WHERE id=?")
-@FilterDef(name = "deletedRoleFilter", parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
-@Filter(name = "deletedRoleFilter", condition = "is_deleted = :isDeleted")
+@FilterDef(name = RoleUseCaseConfig.DELETED_FILTER, parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
+@Filter(name = RoleUseCaseConfig.DELETED_FILTER, condition = "is_deleted = :isDeleted")
 public class RoleData extends GenericEntityData {
     @Enumerated(EnumType.STRING)
     @Column(name = "name", unique = true, nullable = false)
@@ -53,12 +56,12 @@ public class RoleData extends GenericEntityData {
         RoleData roleData = (RoleData) o;
         return isActive == roleData.isActive &&
                 name == roleData.name &&
-                java.util.Objects.equals(description, roleData.description);
+                Objects.equals(description, roleData.description);
     }
 
     @Override
     public int hashCode() {
-        return java.util.Objects.hash(super.hashCode(), name, description, isActive);
+        return Objects.hash(super.hashCode(), name, description, isActive);
     }
 
     public RoleData() {

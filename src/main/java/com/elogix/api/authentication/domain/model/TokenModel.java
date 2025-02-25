@@ -30,6 +30,8 @@ public class TokenModel extends GenericEntity {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
+        if (!super.equals(o)) // Añadir verificación de igualdad con la clase padre
+            return false;
         TokenModel that = (TokenModel) o;
         return isRevoked == that.isRevoked &&
                 Arrays.equals(token, that.token) &&
@@ -40,13 +42,26 @@ public class TokenModel extends GenericEntity {
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(type, isRevoked, user);
-        result = 31 * result + Arrays.hashCode(token);
-        result = 31 * result + Arrays.hashCode(refreshToken);
-        return result;
+        return Objects.hash(
+                super.hashCode(), // Añadir llamada al hashCode padre
+                type,
+                isRevoked,
+                user,
+                Arrays.hashCode(token),
+                Arrays.hashCode(refreshToken));
     }
 
     public TokenModel() {
         super();
+    }
+
+    @Override
+    public String toString() {
+        return "TokenModel(super=" + super.toString() +
+                ", token=[PROTECTED]" +
+                ", refreshToken=[PROTECTED]" +
+                ", type=" + type +
+                ", isRevoked=" + isRevoked +
+                ", user=" + user + ")";
     }
 }

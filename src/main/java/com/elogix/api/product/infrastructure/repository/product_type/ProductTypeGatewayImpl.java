@@ -4,15 +4,13 @@ import java.util.List;
 
 import org.hibernate.Session;
 
+import com.elogix.api.generics.config.GenericConfig;
 import com.elogix.api.generics.infrastructure.repository.GenericNamed.GenericNamedGatewayImpl;
 import com.elogix.api.product.domain.gateway.ProductTypeGateway;
 import com.elogix.api.product.domain.model.ProductType;
 import com.elogix.api.product.infrastructure.helper.mapper.ProductTypeMapper;
 import com.elogix.api.product.infrastructure.repository.product_category.ProductCategoryData;
 import com.elogix.api.product.infrastructure.repository.product_category.ProductCategoryDataJpaRepository;
-import com.elogix.api.shared.infraestructure.helpers.UpdateUtils;
-
-import jakarta.persistence.EntityManager;
 
 public class ProductTypeGatewayImpl
         extends GenericNamedGatewayImpl<ProductType, ProductTypeData, ProductTypeDataJpaRepository, ProductTypeMapper>
@@ -20,13 +18,9 @@ public class ProductTypeGatewayImpl
     private final ProductCategoryDataJpaRepository repoCategory;
 
     public ProductTypeGatewayImpl(
-            ProductTypeDataJpaRepository repository,
-            ProductTypeMapper mapper,
-            ProductCategoryDataJpaRepository repoCategory,
-            EntityManager entityManager,
-            UpdateUtils updateUtils,
-            String deletedFilter) {
-        super(repository, mapper, entityManager, updateUtils, deletedFilter);
+            GenericConfig<ProductType, ProductTypeData, ProductTypeDataJpaRepository, ProductTypeMapper> config,
+            ProductCategoryDataJpaRepository repoCategory) {
+        super(config);
         this.repoCategory = repoCategory;
     }
 

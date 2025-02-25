@@ -13,16 +13,14 @@ import org.springframework.transaction.annotation.Transactional;
 import com.elogix.api.delivery_order.domain.model.DeliveryOrder;
 import com.elogix.api.delivery_orders.domain.model.EStatus;
 import com.elogix.api.delivery_orders.domain.model.Status;
-import com.elogix.api.delivery_orders.domain.usecase.StatusUseCase;
+import com.elogix.api.generics.config.GenericStatusConfig;
 import com.elogix.api.generics.domain.gateway.GenericProductionGateway;
 import com.elogix.api.generics.domain.model.GenericProduction;
 import com.elogix.api.generics.domain.model.StatusFields;
 import com.elogix.api.generics.infrastructure.helpers.GenericProductionMapper;
 import com.elogix.api.generics.infrastructure.repository.GenericStatus.GenericStatusGatewayImpl;
-import com.elogix.api.shared.infraestructure.helpers.UpdateUtils;
 import com.elogix.api.users.domain.model.UserBasic;
 
-import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -43,13 +41,8 @@ public abstract class GenericProductionGatewayImpl<T extends GenericProduction, 
      * Constructor for GenericProductionGatewayImpl
      */
     protected GenericProductionGatewayImpl(
-            R repository,
-            M mapper,
-            EntityManager entityManager,
-            UpdateUtils updateUtils,
-            StatusUseCase statusUseCase,
-            String deletedFilter) {
-        super(repository, mapper, entityManager, updateUtils, statusUseCase, deletedFilter);
+            GenericStatusConfig<T, D, R, M> config) {
+        super(config);
     }
 
     private static final long MINIMUM_DELAY_SECONDS = 10;

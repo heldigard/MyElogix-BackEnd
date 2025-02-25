@@ -9,6 +9,7 @@ import org.hibernate.annotations.SQLDelete;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.elogix.api.generics.infrastructure.repository.GenericStatus.GenericStatusData;
+import com.elogix.api.product.config.ProductUseCaseConfig;
 import com.elogix.api.product.infrastructure.repository.product_type.ProductTypeData;
 
 import jakarta.persistence.Column;
@@ -33,8 +34,8 @@ import lombok.experimental.SuperBuilder;
 @Setter
 @ToString
 @SQLDelete(sql = "UPDATE products SET is_deleted = true WHERE id=?")
-@FilterDef(name = "deletedProductFilter", parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
-@Filter(name = "deletedProductFilter", condition = "is_deleted = :isDeleted")
+@FilterDef(name = ProductUseCaseConfig.DELETED_FILTER, parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
+@Filter(name = ProductUseCaseConfig.DELETED_FILTER, condition = "is_deleted = :isDeleted")
 public class ProductData extends GenericStatusData {
     @NotBlank
     @Column(name = "reference", length = 50, unique = true, nullable = false)

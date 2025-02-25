@@ -6,13 +6,12 @@ import org.springframework.transaction.annotation.Transactional;
 import com.elogix.api.delivery_orders.domain.model.EStatus;
 import com.elogix.api.delivery_orders.domain.model.Status;
 import com.elogix.api.delivery_orders.domain.usecase.StatusUseCase;
+import com.elogix.api.generics.config.GenericStatusConfig;
 import com.elogix.api.generics.domain.gateway.GenericStatusGateway;
 import com.elogix.api.generics.domain.model.GenericStatus;
 import com.elogix.api.generics.infrastructure.helpers.GenericMapperGateway;
 import com.elogix.api.generics.infrastructure.repository.GenericEntity.GenericGatewayImpl;
-import com.elogix.api.shared.infraestructure.helpers.UpdateUtils;
 
-import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -26,7 +25,6 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public abstract class GenericStatusGatewayImpl<T extends GenericStatus, D extends GenericStatusData, R extends JpaRepository<D, Long> & GenericStatusRepository<D>, M extends GenericMapperGateway<T, D>>
-
         extends GenericGatewayImpl<T, D, R, M>
         implements GenericStatusGateway<T> {
 
@@ -36,15 +34,9 @@ public abstract class GenericStatusGatewayImpl<T extends GenericStatus, D extend
      * Constructor for GenericProductionGatewayImpl
      */
     protected GenericStatusGatewayImpl(
-            R repository,
-            M mapper,
-            EntityManager entityManager,
-            UpdateUtils updateUtils,
-            StatusUseCase statusUseCase,
-            String deletedFilter) {
-        super(repository, mapper, entityManager, updateUtils, deletedFilter);
-        this.statusUseCase = statusUseCase;
-        this.deletedFilter = deletedFilter;
+            GenericStatusConfig<T, D, R, M> config) {
+        super(config);
+        this.statusUseCase = config.getStatusUseCase();
     }
 
     @Override

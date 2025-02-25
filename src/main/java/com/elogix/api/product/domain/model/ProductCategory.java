@@ -42,7 +42,6 @@ public class ProductCategory extends GenericNamed {
     public String toString() {
         return "ProductCategory{" +
                 super.toString() +
-                ", description='" + description + '\'' +
                 '}';
     }
 }

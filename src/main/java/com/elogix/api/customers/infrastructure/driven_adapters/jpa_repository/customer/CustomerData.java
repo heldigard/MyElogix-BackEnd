@@ -10,11 +10,12 @@ import org.hibernate.annotations.ParamDef;
 import org.hibernate.annotations.SQLDelete;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.elogix.api.customers.application.config.CustomerUseCaseConfig;
 import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.branch_office.BranchOfficeData;
 import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.document_type.DocumentTypeData;
 import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.membership.MembershipData;
 import com.elogix.api.generics.infrastructure.repository.GenericNamed.GenericNamedData;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -43,8 +44,8 @@ import lombok.experimental.SuperBuilder;
 @Setter
 @ToString
 @SQLDelete(sql = "UPDATE customers SET is_deleted = true WHERE id=?")
-@FilterDef(name = "deletedCustomerFilter", parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
-@Filter(name = "deletedCustomerFilter", condition = "is_deleted = :isDeleted")
+@FilterDef(name = CustomerUseCaseConfig.DELETED_FILTER, parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
+@Filter(name = CustomerUseCaseConfig.DELETED_FILTER, condition = "is_deleted = :isDeleted")
 public class CustomerData extends GenericNamedData {
     @NotBlank
     @Column(length = 100, nullable = false)

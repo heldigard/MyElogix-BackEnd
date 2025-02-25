@@ -60,4 +60,16 @@ public class Product extends GenericStatus {
     public int hashCode() {
         return Objects.hash(super.hashCode(), reference, description, type, price, hits, isActive, isLowStock);
     }
+
+    @Override
+    public String toString() {
+        return "Product{" +
+                super.toString() +
+                ", reference='" + reference + '\'' +
+                ", type=" + type +
+                ", price=" + price +
+                ", isActive=" + isActive +
+                ", isLowStock=" + isLowStock +
+                '}';
+    }
 }

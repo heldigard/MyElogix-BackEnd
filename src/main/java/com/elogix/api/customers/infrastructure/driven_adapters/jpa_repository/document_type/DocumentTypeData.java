@@ -7,6 +7,7 @@ import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.ParamDef;
 import org.hibernate.annotations.SQLDelete;
 
+import com.elogix.api.customers.application.config.DocumentTypeUseCaseConfig;
 import com.elogix.api.generics.infrastructure.repository.GenericNamed.GenericNamedData;
 
 import jakarta.persistence.Column;
@@ -25,8 +26,8 @@ import lombok.experimental.SuperBuilder;
 @Setter
 @ToString
 @SQLDelete(sql = "UPDATE document_types SET is_deleted = true WHERE id=?")
-@FilterDef(name = "deletedDocumentTypeFilter", parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
-@Filter(name = "deletedDocumentTypeFilter", condition = "is_deleted = :isDeleted")
+@FilterDef(name = DocumentTypeUseCaseConfig.DELETED_FILTER, parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
+@Filter(name = DocumentTypeUseCaseConfig.DELETED_FILTER, condition = "is_deleted = :isDeleted")
 public class DocumentTypeData extends GenericNamedData {
     @NotBlank
     @Column(length = 5, nullable = false)

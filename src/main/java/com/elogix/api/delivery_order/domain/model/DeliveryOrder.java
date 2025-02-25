@@ -76,13 +76,9 @@ public class DeliveryOrder extends GenericProduction {
         return "DeliveryOrder{" +
                 super.toString() +
                 ", customer=" + customer +
-                ", branchOffice=" + branchOffice +
                 ", deliveryZone=" + deliveryZone +
                 ", productOrders=[size=" + (productOrders != null ? productOrders.size() : 0) + "]" +
-                ", generalObservations='" + generalObservations + '\'' +
                 ", totalPrice=" + totalPrice +
-                ", billedAt=" + billedAt +
-                ", billedBy=" + billedBy +
                 ", isBilled=" + isBilled +
                 '}';
     }

@@ -8,22 +8,16 @@ import org.hibernate.Session;
 import com.elogix.api.customers.domain.model.BranchOffice;
 import com.elogix.api.customers.domain.model.gateways.BranchOfficeGateway;
 import com.elogix.api.customers.infrastructure.helpers.mappers.BranchOfficeMapper;
+import com.elogix.api.generics.config.GenericConfig;
 import com.elogix.api.generics.infrastructure.repository.GenericEntity.GenericGatewayImpl;
-import com.elogix.api.shared.infraestructure.helpers.UpdateUtils;
-
-import jakarta.persistence.EntityManager;
 
 public class BranchOfficeGatewayImpl
-        extends GenericGatewayImpl<BranchOffice, BranchOfficeData, BranchOfficeJpaRepository, BranchOfficeMapper>
+        extends GenericGatewayImpl<BranchOffice, BranchOfficeData, BranchOfficeDataJpaRepository, BranchOfficeMapper>
         implements BranchOfficeGateway {
 
     public BranchOfficeGatewayImpl(
-            BranchOfficeJpaRepository repository,
-            BranchOfficeMapper mapper,
-            EntityManager entityManager,
-            UpdateUtils updateUtils,
-            String deletedFilter) {
-        super(repository, mapper, entityManager, updateUtils, deletedFilter);
+            GenericConfig<BranchOffice, BranchOfficeData, BranchOfficeDataJpaRepository, BranchOfficeMapper> config) {
+        super(config);
     }
 
     @Override

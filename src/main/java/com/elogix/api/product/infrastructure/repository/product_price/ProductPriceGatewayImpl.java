@@ -5,25 +5,19 @@ import java.util.Optional;
 
 import org.hibernate.Session;
 
+import com.elogix.api.generics.config.GenericConfig;
 import com.elogix.api.generics.infrastructure.repository.GenericEntity.GenericGatewayImpl;
 import com.elogix.api.product.domain.gateway.ProductPriceGateway;
 import com.elogix.api.product.domain.model.ProductPrice;
 import com.elogix.api.product.infrastructure.helper.mapper.ProductPriceMapper;
-import com.elogix.api.shared.infraestructure.helpers.UpdateUtils;
-
-import jakarta.persistence.EntityManager;
 
 public class ProductPriceGatewayImpl
         extends GenericGatewayImpl<ProductPrice, ProductPriceData, ProductPriceDataJpaRepository, ProductPriceMapper>
         implements ProductPriceGateway {
 
     public ProductPriceGatewayImpl(
-            ProductPriceDataJpaRepository repository,
-            ProductPriceMapper mapper,
-            EntityManager entityManager,
-            UpdateUtils updateUtils,
-            String deletedFilter) {
-        super(repository, mapper, entityManager, updateUtils, deletedFilter);
+            GenericConfig<ProductPrice, ProductPriceData, ProductPriceDataJpaRepository, ProductPriceMapper> config) {
+        super(config);
     }
 
     @Override

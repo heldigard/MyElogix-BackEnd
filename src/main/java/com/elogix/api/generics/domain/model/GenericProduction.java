@@ -107,18 +107,6 @@ public abstract class GenericProduction extends GenericStatus {
                 ", isFinished=" + isFinished +
                 ", isDelivered=" + isDelivered +
                 ", isCancelled=" + isCancelled +
-                ", isPaused=" + isPaused +
-                // Timestamps
-                ", productionAt=" + productionAt +
-                ", finishedAt=" + finishedAt +
-                ", deliveredAt=" + deliveredAt +
-                ", cancelledAt=" + cancelledAt +
-                ", pausedAt=" + pausedAt +
-                // Users
-                ", productionBy=" + (productionBy != null ? productionBy.getId() : "null") +
-                ", finishedBy=" + (finishedBy != null ? finishedBy.getId() : "null") +
-                ", deliveredBy=" + (deliveredBy != null ? deliveredBy.getId() : "null") +
-                ", cancelledBy=" + (cancelledBy != null ? cancelledBy.getId() : "null") +
-                ", pausedBy=" + (pausedBy != null ? pausedBy.getId() : "null");
+                ", isPaused=" + isPaused;
     }
 }

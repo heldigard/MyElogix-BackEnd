@@ -15,11 +15,9 @@ import com.elogix.api.customers.domain.usecase.BranchOfficeUseCase;
 import com.elogix.api.customers.domain.usecase.DocumentTypeUseCase;
 import com.elogix.api.customers.domain.usecase.MembershipUseCase;
 import com.elogix.api.customers.infrastructure.helpers.mappers.CustomerMapper;
+import com.elogix.api.generics.config.GenericConfig;
 import com.elogix.api.generics.infrastructure.repository.GenericNamed.GenericNamedGatewayImpl;
 import com.elogix.api.shared.domain.model.Hits;
-import com.elogix.api.shared.infraestructure.helpers.UpdateUtils;
-
-import jakarta.persistence.EntityManager;
 
 public class CustomerGatewayImpl
         extends GenericNamedGatewayImpl<Customer, CustomerData, CustomerDataJpaRepository, CustomerMapper>
@@ -29,16 +27,11 @@ public class CustomerGatewayImpl
     private final MembershipUseCase membershipUseCase;
     private final BranchOfficeUseCase officeUseCase;
 
-    public CustomerGatewayImpl(
-            CustomerDataJpaRepository repository,
-            CustomerMapper mapper,
+    public CustomerGatewayImpl(GenericConfig<Customer, CustomerData, CustomerDataJpaRepository, CustomerMapper> config,
             DocumentTypeUseCase docTypeUseCase,
             MembershipUseCase membershipUseCase,
-            BranchOfficeUseCase officeUseCase,
-            EntityManager entityManager,
-            UpdateUtils updateUtils,
-            String deletedFilter) {
-        super(repository, mapper, entityManager, updateUtils, deletedFilter);
+            BranchOfficeUseCase officeUseCase) {
+        super(config);
         this.docTypeUseCase = docTypeUseCase;
         this.membershipUseCase = membershipUseCase;
         this.officeUseCase = officeUseCase;

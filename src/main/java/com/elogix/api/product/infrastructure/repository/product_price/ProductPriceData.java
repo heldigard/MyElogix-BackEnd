@@ -10,6 +10,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.elogix.api.delivery_orders.infrastructure.driven_adapters.jpa_repository.price_list.PriceListData;
 import com.elogix.api.generics.infrastructure.repository.GenericEntity.GenericEntityData;
+import com.elogix.api.product.config.ProductPriceUseCaseConfig;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -33,8 +34,8 @@ import lombok.experimental.SuperBuilder;
 @Setter
 @ToString
 @SQLDelete(sql = "UPDATE product_prices SET is_deleted = true WHERE id=?")
-@FilterDef(name = "deletedProductPriceFilter", parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
-@Filter(name = "deletedProductPriceFilter", condition = "is_deleted = :isDeleted")
+@FilterDef(name = ProductPriceUseCaseConfig.DELETED_FILTER, parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
+@Filter(name = ProductPriceUseCaseConfig.DELETED_FILTER, condition = "is_deleted = :isDeleted")
 public class ProductPriceData extends GenericEntityData {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pricelist_id", referencedColumnName = "id")

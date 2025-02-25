@@ -3,6 +3,7 @@ package com.elogix.api.delivery_order.infrastructure.repository.delivery_order;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 
 import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.FilterDef;
@@ -10,13 +11,14 @@ import org.hibernate.annotations.ParamDef;
 import org.hibernate.annotations.SQLDelete;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.branch_office.BranchOfficeData;
 import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.customer.CustomerData;
 import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.delivery_zone_basic.DeliveryZoneBasicData;
+import com.elogix.api.delivery_order.config.DeliveryOrderUseCaseConfig;
 import com.elogix.api.generics.infrastructure.repository.GenericProduction.GenericProductionData;
 import com.elogix.api.product_order.infrastructure.repository.ProductOrderData;
 import com.elogix.api.users.infrastructure.driven_adapters.jpa_repository.user_basic.UserBasicData;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
@@ -42,8 +44,8 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @Setter
 @SQLDelete(sql = "UPDATE delivery_orders SET is_deleted = true WHERE id=?")
-@FilterDef(name = "deletedDeliveryOrderFilter", parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
-@Filter(name = "deletedDeliveryOrderFilter", condition = "is_deleted = :isDeleted")
+@FilterDef(name = DeliveryOrderUseCaseConfig.DELETED_FILTER, parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
+@Filter(name = DeliveryOrderUseCaseConfig.DELETED_FILTER, condition = "is_deleted = :isDeleted")
 public class DeliveryOrderData extends GenericProductionData {
 
     @Column(name = "billed_at", columnDefinition = "TIMESTAMP")
@@ -88,5 +90,54 @@ public class DeliveryOrderData extends GenericProductionData {
 
     public DeliveryOrderData() {
         super();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof DeliveryOrderData that))
+            return false;
+        if (!super.equals(o))
+            return false;
+        return isBilled == that.isBilled &&
+                Objects.equals(billedAt, that.billedAt) &&
+                Objects.equals(customer, that.customer) &&
+                Objects.equals(deliveryZone, that.deliveryZone) &&
+                Objects.equals(branchOffice, that.branchOffice) &&
+                Objects.equals(productOrders, that.productOrders) &&
+                Objects.equals(generalObservations, that.generalObservations) &&
+                Objects.equals(totalPrice, that.totalPrice) &&
+                Objects.equals(billedBy, that.billedBy);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(),
+                billedAt,
+                customer,
+                deliveryZone,
+                branchOffice,
+                productOrders,
+                generalObservations,
+                totalPrice,
+                billedBy,
+                isBilled);
+    }
+
+    @Override
+    public String toString() {
+        return "DeliveryOrderData{" +
+                super.toString() +
+                ", billedAt=" + billedAt +
+                ", customer=" + (customer != null ? customer.getId() : "null") +
+                ", deliveryZone=" + (deliveryZone != null ? deliveryZone.getId() : "null") +
+                ", branchOffice=" + (branchOffice != null ? branchOffice.getId() : "null") +
+                ", productOrders=" + (productOrders != null ? productOrders.size() + " items" : "null") +
+                ", generalObservations='" + generalObservations + '\'' +
+                ", totalPrice=" + totalPrice +
+                ", billedBy=" + (billedBy != null ? billedBy.getId() : "null") +
+                ", isBilled=" + isBilled +
+                '}';
     }
 }

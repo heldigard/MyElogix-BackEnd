@@ -9,10 +9,8 @@ import com.elogix.api.customers.domain.model.gateways.NeighborhoodGateway;
 import com.elogix.api.customers.domain.usecase.CityBasicUseCase;
 import com.elogix.api.customers.domain.usecase.DeliveryZoneBasicUseCase;
 import com.elogix.api.customers.infrastructure.helpers.mappers.NeighborhoodMapper;
+import com.elogix.api.generics.config.GenericConfig;
 import com.elogix.api.generics.infrastructure.repository.GenericNamed.GenericNamedGatewayImpl;
-import com.elogix.api.shared.infraestructure.helpers.UpdateUtils;
-
-import jakarta.persistence.EntityManager;
 
 public class NeighborhoodGatewayImpl
         extends
@@ -23,14 +21,10 @@ public class NeighborhoodGatewayImpl
     private final DeliveryZoneBasicUseCase zoneUseCase;
 
     public NeighborhoodGatewayImpl(
-            NeighborhoodDataJpaRepository repository,
-            NeighborhoodMapper mapper,
+            GenericConfig<Neighborhood, NeighborhoodData, NeighborhoodDataJpaRepository, NeighborhoodMapper> config,
             CityBasicUseCase cityUseCase,
-            DeliveryZoneBasicUseCase zoneUseCase,
-            EntityManager entityManager,
-            UpdateUtils updateUtils,
-            String deletedFilter) {
-        super(repository, mapper, entityManager, updateUtils, deletedFilter);
+            DeliveryZoneBasicUseCase zoneUseCase) {
+        super(config);
         this.cityUseCase = cityUseCase;
         this.zoneUseCase = zoneUseCase;
     }

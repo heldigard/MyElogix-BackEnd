@@ -2,23 +2,17 @@ package com.elogix.api.delivery_orders.infrastructure.driven_adapters.jpa_reposi
 
 import com.elogix.api.delivery_orders.domain.model.PriceList;
 import com.elogix.api.delivery_orders.domain.model.gateways.PriceListGateway;
+import com.elogix.api.generics.config.GenericConfig;
 import com.elogix.api.generics.infrastructure.repository.GenericNamed.GenericNamedGatewayImpl;
 import com.elogix.api.product.infrastructure.helper.mapper.PriceListMapper;
-import com.elogix.api.shared.infraestructure.helpers.UpdateUtils;
-
-import jakarta.persistence.EntityManager;
 
 public class PriceListGatewayImpl
         extends GenericNamedGatewayImpl<PriceList, PriceListData, PriceListDataJpaRepository, PriceListMapper>
         implements PriceListGateway {
 
     public PriceListGatewayImpl(
-            PriceListDataJpaRepository repository,
-            PriceListMapper mapper,
-            EntityManager entityManager,
-            UpdateUtils updateUtils,
-            String deletedFilter) {
-        super(repository, mapper, entityManager, updateUtils, deletedFilter);
+            GenericConfig<PriceList, PriceListData, PriceListDataJpaRepository, PriceListMapper> config) {
+        super(config);
     }
 
     @Override

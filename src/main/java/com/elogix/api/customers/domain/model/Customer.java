@@ -71,10 +71,7 @@ public class Customer extends GenericNamed {
         return "Customer{" +
                 super.toString() +
                 ", documentNumber='" + documentNumber + '\'' +
-                ", documentType=" + documentType +
                 ", branchOfficeList=[size=" + (branchOfficeList != null ? branchOfficeList.size() : 0) + "]" +
-                ", email='" + email + '\'' +
-                ", phone='" + phone + '\'' +
                 ", membership=" + membership +
                 ", hits=" + hits +
                 ", isActive=" + isActive +

@@ -8,22 +8,16 @@ import com.elogix.api.customers.domain.model.EMembership;
 import com.elogix.api.customers.domain.model.Membership;
 import com.elogix.api.customers.domain.model.gateways.MembershipGateway;
 import com.elogix.api.customers.infrastructure.helpers.mappers.MembershipMapper;
+import com.elogix.api.generics.config.GenericConfig;
 import com.elogix.api.generics.infrastructure.repository.GenericEntity.GenericGatewayImpl;
-import com.elogix.api.shared.infraestructure.helpers.UpdateUtils;
-
-import jakarta.persistence.EntityManager;
 
 public class MembershipGatewayImpl
         extends GenericGatewayImpl<Membership, MembershipData, MembershipDataJpaRepository, MembershipMapper>
         implements MembershipGateway {
 
     public MembershipGatewayImpl(
-            MembershipDataJpaRepository repository,
-            MembershipMapper mapper,
-            EntityManager entityManager,
-            UpdateUtils updateUtils,
-            String deletedFilter) {
-        super(repository, mapper, entityManager, updateUtils, deletedFilter);
+            GenericConfig<Membership, MembershipData, MembershipDataJpaRepository, MembershipMapper> config) {
+        super(config);
     }
 
     @Override

@@ -53,8 +53,6 @@ public class ProductType extends GenericNamed {
     public String toString() {
         return "ProductType{" +
                 super.toString() +
-                ", description='" + description + '\'' +
-                ", category=" + category +
                 ", isMeasurable=" + isMeasurable +
                 '}';
     }

@@ -8,6 +8,7 @@ import org.hibernate.annotations.ParamDef;
 import org.hibernate.annotations.SQLDelete;
 
 import com.elogix.api.generics.infrastructure.repository.GenericNamed.GenericNamedData;
+import com.elogix.api.users.application.config.OfficeUseCaseConfig;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -29,8 +30,8 @@ import lombok.experimental.SuperBuilder;
 @Setter
 @ToString
 @SQLDelete(sql = "UPDATE offices SET is_deleted = true WHERE id=?")
-@FilterDef(name = "deletedOfficeFilter", parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
-@Filter(name = "deletedOfficeFilter", condition = "is_deleted = :isDeleted")
+@FilterDef(name = OfficeUseCaseConfig.DELETED_FILTER, parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
+@Filter(name = OfficeUseCaseConfig.DELETED_FILTER, condition = "is_deleted = :isDeleted")
 public class OfficeData extends GenericNamedData {
     @NotBlank
     @Column(length = 100, nullable = false, unique = true)

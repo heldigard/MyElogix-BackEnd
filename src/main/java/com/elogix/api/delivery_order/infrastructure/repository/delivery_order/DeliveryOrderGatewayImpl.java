@@ -36,15 +36,15 @@ import com.elogix.api.generics.infrastructure.repository.GenericProduction.Gener
 import com.elogix.api.product.domain.model.ProductBasic;
 import com.elogix.api.product.domain.usecase.ProductBasicUseCase;
 import com.elogix.api.product.domain.usecase.ProductUseCase;
+import com.elogix.api.product_order.config.ProductOrderConfig;
 import com.elogix.api.product_order.domain.model.ProductOrder;
 import com.elogix.api.product_order.domain.usecase.ProductOrderUseCase;
 import com.elogix.api.shared.domain.model.pagination.DateRange;
 import com.elogix.api.shared.domain.model.pagination.PaginationCriteria;
 import com.elogix.api.shared.infraestructure.helpers.RequestUtils;
-import com.elogix.api.shared.infraestructure.helpers.UpdateUtils;
+import com.elogix.api.shared.infraestructure.notification.NotificationService;
 import com.elogix.api.users.domain.model.UserBasic;
 
-import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -94,31 +94,21 @@ public class DeliveryOrderGatewayImpl extends
     private final ProductBasicUseCase productBasicUseCase;
     private final ProductUseCase productUseCase;
     private final RequestUtils requestUtils;
+    private final NotificationService notificationService;
 
     public DeliveryOrderGatewayImpl(
-            DeliveryOrderDataJpaRepository repository,
-            DeliveryOrderMapper mapper,
+            ProductOrderConfig<DeliveryOrder, DeliveryOrderData, DeliveryOrderDataJpaRepository, DeliveryOrderMapper> config,
             CustomerUseCase customerUseCase,
-            StatusUseCase statusUseCase,
-            ProductUseCase productUseCase,
-            EntityManager entityManager,
             DeliveryZoneBasicUseCase deliveryZoneUseCase,
             BranchOfficeUseCase officeUseCase,
             MetricUnitUseCase metricUnitUseCase,
             MeasureDetailUseCase measureDetailUseCase,
             ProductBasicUseCase productBasicUseCase,
-            UpdateUtils updateUtils,
-            RequestUtils requestUtils,
-            String deletedFilter) {
-        super(
-                repository,
-                mapper,
-                entityManager,
-                updateUtils,
-                statusUseCase,
-                deletedFilter);
+            RequestUtils requestUtils) {
+        super(config);
+        this.notificationService = config.getNotificationService();
+        this.productUseCase = config.getProductUseCase();
         this.customerUseCase = customerUseCase;
-        this.productUseCase = productUseCase;
         this.deliveryZoneUseCase = deliveryZoneUseCase;
         this.officeUseCase = officeUseCase;
         this.metricUnitUseCase = metricUnitUseCase;

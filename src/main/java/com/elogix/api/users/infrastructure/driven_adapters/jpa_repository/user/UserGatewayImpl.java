@@ -6,15 +6,13 @@ import java.util.Set;
 import org.hibernate.Session;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.elogix.api.generics.config.GenericConfig;
 import com.elogix.api.generics.infrastructure.repository.GenericEntity.GenericGatewayImpl;
-import com.elogix.api.shared.infraestructure.helpers.UpdateUtils;
 import com.elogix.api.users.domain.model.RoleModel;
 import com.elogix.api.users.domain.model.UserModel;
 import com.elogix.api.users.domain.model.gateways.UserGateway;
 import com.elogix.api.users.infrastructure.helpers.mappers.RoleMapper;
 import com.elogix.api.users.infrastructure.helpers.mappers.UserMapper;
-
-import jakarta.persistence.EntityManager;
 
 public class UserGatewayImpl extends GenericGatewayImpl<UserModel, UserData, UserDataJpaRepository, UserMapper>
         implements UserGateway {
@@ -25,14 +23,10 @@ public class UserGatewayImpl extends GenericGatewayImpl<UserModel, UserData, Use
     private static final int MIN_PASSWORD_LENGTH = 6;
 
     public UserGatewayImpl(
-            UserMapper mapper,
+            GenericConfig<UserModel, UserData, UserDataJpaRepository, UserMapper> config,
             RoleMapper roleMapper,
-            UserDataJpaRepository repository,
-            PasswordEncoder passwordEncoder,
-            EntityManager entityManager,
-            UpdateUtils updateUtils,
-            String deletedFilter) {
-        super(repository, mapper, entityManager, updateUtils, deletedFilter);
+            PasswordEncoder passwordEncoder) {
+        super(config);
         this.roleMapper = roleMapper;
         this.passwordEncoder = passwordEncoder;
     }

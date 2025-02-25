@@ -21,11 +21,10 @@ import com.elogix.api.authentication.infrastructure.exception.JwtRefreshExceptio
 import com.elogix.api.authentication.infrastructure.helpers.TokenMapper;
 import com.elogix.api.authentication.infrastructure.repository.JwtTokenProvider;
 import com.elogix.api.authentication.infrastructure.repository.userdetails.UserDetailsServiceImpl;
+import com.elogix.api.generics.config.GenericConfig;
 import com.elogix.api.generics.infrastructure.repository.GenericEntity.GenericGatewayImpl;
-import com.elogix.api.shared.infraestructure.helpers.UpdateUtils;
 import com.elogix.api.users.domain.model.UserModel;
 
-import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -34,10 +33,9 @@ public class TokenGatewayImpl extends GenericGatewayImpl<TokenModel, TokenData, 
     private final JwtTokenProvider jwtTokenProvider;
     private final UserDetailsServiceImpl userDetailsService;
 
-    public TokenGatewayImpl(TokenDataJpaRepository repository, TokenMapper mapper, EntityManager entityManager,
-            UpdateUtils updateUtils,
+    public TokenGatewayImpl(GenericConfig<TokenModel, TokenData, TokenDataJpaRepository, TokenMapper> config,
             JwtTokenProvider jwtTokenProvider, UserDetailsServiceImpl userDetailsService) {
-        super(repository, mapper, entityManager, updateUtils, "deletedTokenFilter");
+        super(config);
         this.jwtTokenProvider = jwtTokenProvider;
         this.userDetailsService = userDetailsService;
     }

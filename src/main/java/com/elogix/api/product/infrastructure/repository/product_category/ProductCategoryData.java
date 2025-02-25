@@ -6,6 +6,7 @@ import org.hibernate.annotations.ParamDef;
 import org.hibernate.annotations.SQLDelete;
 
 import com.elogix.api.generics.infrastructure.repository.GenericNamed.GenericNamedData;
+import com.elogix.api.product.config.ProductCategoryUseCaseConfig;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -22,8 +23,8 @@ import lombok.experimental.SuperBuilder;
 @Setter
 @ToString
 @SQLDelete(sql = "UPDATE product_categories SET is_deleted = true WHERE id=?")
-@FilterDef(name = "deletedProductCategoryFilter", parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
-@Filter(name = "deletedProductCategoryFilter", condition = "is_deleted = :isDeleted")
+@FilterDef(name = ProductCategoryUseCaseConfig.DELETED_FILTER, parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
+@Filter(name = ProductCategoryUseCaseConfig.DELETED_FILTER, condition = "is_deleted = :isDeleted")
 public class ProductCategoryData extends GenericNamedData {
     @Column(unique = true, length = 50, nullable = false)
     private String name;

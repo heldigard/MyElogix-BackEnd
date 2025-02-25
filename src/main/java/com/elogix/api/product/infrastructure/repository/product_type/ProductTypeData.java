@@ -1,13 +1,14 @@
 package com.elogix.api.product.infrastructure.repository.product_type;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.ParamDef;
 import org.hibernate.annotations.SQLDelete;
 
 import com.elogix.api.generics.infrastructure.repository.GenericNamed.GenericNamedData;
+import com.elogix.api.product.config.ProductTypeUseCaseConfig;
 import com.elogix.api.product.infrastructure.repository.product_category.ProductCategoryData;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -28,8 +29,8 @@ import lombok.experimental.SuperBuilder;
 @Setter
 @ToString
 @SQLDelete(sql = "UPDATE product_types SET is_deleted = true WHERE id=?")
-@FilterDef(name = "deletedProductTypeFilter", parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
-@Filter(name = "deletedProductTypeFilter", condition = "is_deleted = :isDeleted")
+@FilterDef(name = ProductTypeUseCaseConfig.DELETED_FILTER, parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
+@Filter(name = ProductTypeUseCaseConfig.DELETED_FILTER, condition = "is_deleted = :isDeleted")
 public class ProductTypeData extends GenericNamedData {
     @Column(unique = true, length = 50, nullable = false)
     private String name;

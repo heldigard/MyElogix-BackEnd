@@ -7,6 +7,7 @@ import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.ParamDef;
 import org.hibernate.annotations.SQLDelete;
 
+import com.elogix.api.delivery_orders.application.config.MetricUnitUseCaseConfig;
 import com.elogix.api.generics.infrastructure.repository.GenericNamed.GenericNamedData;
 
 import jakarta.persistence.Column;
@@ -24,8 +25,8 @@ import lombok.experimental.SuperBuilder;
 @Setter
 @ToString
 @SQLDelete(sql = "UPDATE metric_unit SET is_deleted = true WHERE id=?")
-@FilterDef(name = "deletedMetricUnitFilter", parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
-@Filter(name = "deletedMetricUnitFilter", condition = "is_deleted = :isDeleted")
+@FilterDef(name = MetricUnitUseCaseConfig.DELETED_FILTER, parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
+@Filter(name = MetricUnitUseCaseConfig.DELETED_FILTER, condition = "is_deleted = :isDeleted")
 public class MetricUnitData extends GenericNamedData {
     @Column(name = "name", unique = true, length = 3)
     private String name;

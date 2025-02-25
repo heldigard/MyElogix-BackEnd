@@ -10,11 +10,12 @@ import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.ParamDef;
 import org.hibernate.annotations.SQLDelete;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.elogix.api.generics.infrastructure.repository.GenericEntity.GenericEntityData;
+import com.elogix.api.users.application.config.UserUseCaseConfig;
 import com.elogix.api.users.infrastructure.driven_adapters.jpa_repository.office.OfficeData;
 import com.elogix.api.users.infrastructure.driven_adapters.jpa_repository.role.RoleData;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -41,8 +42,8 @@ import lombok.ToString;
 @Getter
 @Setter
 @SQLDelete(sql = "UPDATE users SET is_deleted = true WHERE id=?")
-@FilterDef(name = "deletedUserFilter", parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
-@Filter(name = "deletedUserFilter", condition = "is_deleted = :isDeleted")
+@FilterDef(name = UserUseCaseConfig.DELETED_FILTER, parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
+@Filter(name = UserUseCaseConfig.DELETED_FILTER, condition = "is_deleted = :isDeleted")
 public class UserData extends GenericEntityData {
     @NotBlank
     @Column(length = 100, nullable = false)

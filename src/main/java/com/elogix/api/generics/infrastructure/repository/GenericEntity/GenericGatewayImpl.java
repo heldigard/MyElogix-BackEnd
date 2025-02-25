@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.elogix.api.generics.config.GenericConfig;
 import com.elogix.api.generics.domain.gateway.GenericGateway;
 import com.elogix.api.generics.domain.model.GenericEntity;
 import com.elogix.api.generics.infrastructure.helpers.GenericMapperGateway;
@@ -15,7 +16,6 @@ import com.elogix.api.generics.infrastructure.repository.GenericBasic.GenericBas
 import com.elogix.api.shared.infraestructure.helpers.UpdateUtils;
 import com.elogix.api.users.domain.model.UserBasic;
 
-import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -57,13 +57,12 @@ public abstract class GenericGatewayImpl<T extends GenericEntity, D extends Gene
     protected final UpdateUtils updateUtils;
 
     protected GenericGatewayImpl(
-            R repository,
-            M mapper,
-            EntityManager entityManager,
-            UpdateUtils updateUtils,
-            String deletedFilter) {
-        super(repository, mapper, entityManager, deletedFilter);
-        this.updateUtils = updateUtils;
+            GenericConfig<T, D, R, M> config) {
+        super(config.getRepository(),
+                config.getMapper(),
+                config.getEntityManager(),
+                config.getDeletedFilter());
+        this.updateUtils = config.getUpdateUtils();
     }
 
     // CRUD Operations

@@ -7,6 +7,7 @@ import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.ParamDef;
 import org.hibernate.annotations.SQLDelete;
 
+import com.elogix.api.delivery_orders.application.config.StatusUseCaseConfig;
 import com.elogix.api.delivery_orders.domain.model.EStatus;
 import com.elogix.api.generics.infrastructure.repository.GenericBasic.GenericBasicEntityData;
 
@@ -27,8 +28,8 @@ import lombok.experimental.SuperBuilder;
 @Setter
 @ToString
 @SQLDelete(sql = "UPDATE statuses SET is_deleted = true WHERE id=?")
-@FilterDef(name = "deletedStatusFilter", parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
-@Filter(name = "deletedStatusFilter", condition = "is_deleted = :isDeleted")
+@FilterDef(name = StatusUseCaseConfig.DELETED_FILTER, parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
+@Filter(name = StatusUseCaseConfig.DELETED_FILTER, condition = "is_deleted = :isDeleted")
 public class StatusData extends GenericBasicEntityData {
     @Enumerated(EnumType.STRING)
     @Column(unique = true)

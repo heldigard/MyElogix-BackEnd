@@ -1,6 +1,5 @@
 package com.elogix.api.generics.infrastructure.repository.GenericNamed;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -9,13 +8,11 @@ import org.hibernate.Session;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import com.elogix.api.generics.config.GenericConfig;
 import com.elogix.api.generics.domain.gateway.GenericNamedGateway;
 import com.elogix.api.generics.domain.model.GenericNamed;
 import com.elogix.api.generics.infrastructure.helpers.GenericMapperGateway;
 import com.elogix.api.generics.infrastructure.repository.GenericEntity.GenericGatewayImpl;
-import com.elogix.api.shared.infraestructure.helpers.UpdateUtils;
-
-import jakarta.persistence.EntityManager;
 
 /**
  * Generic implementation for repositories that handle named entities
@@ -26,17 +23,12 @@ import jakarta.persistence.EntityManager;
  * @param <R> Repository type extending JPA and custom repositories
  * @param <M> Mapper type for converting between domain and data entities
  */
-public abstract class GenericNamedGatewayImpl<T extends GenericNamed, D extends GenericNamedData & Serializable, R extends GenericNamedRepository<D>, M extends GenericMapperGateway<T, D>>
+public abstract class GenericNamedGatewayImpl<T extends GenericNamed, D extends GenericNamedData, R extends GenericNamedRepository<D>, M extends GenericMapperGateway<T, D>>
         extends GenericGatewayImpl<T, D, R, M>
         implements GenericNamedGateway<T> {
 
-    protected GenericNamedGatewayImpl(
-            R repository,
-            M mapper,
-            EntityManager entityManager,
-            UpdateUtils updateUtils,
-            String deletedFilter) {
-        super(repository, mapper, entityManager, updateUtils, deletedFilter);
+    protected GenericNamedGatewayImpl(GenericConfig<T, D, R, M> config) {
+        super(config);
     }
 
     @Override

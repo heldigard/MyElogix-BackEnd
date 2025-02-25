@@ -13,18 +13,18 @@ import jakarta.persistence.EntityManager;
 
 @Configuration
 public class StatusUseCaseConfig {
+    public static final String DELETED_FILTER = "deletedStatusFilter";
+
     @Bean
     public StatusGatewayImpl statusGatewayImpl(
             StatusDataJpaRepository repository,
             StatusMapper mapper,
-            EntityManager entityManager
-    ) {
+            EntityManager entityManager) {
         return new StatusGatewayImpl(
                 repository,
                 mapper,
                 entityManager,
-                "deletedStatusFilter"
-        );
+                DELETED_FILTER);
     }
 
     @Bean

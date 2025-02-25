@@ -4,6 +4,7 @@ import org.hibernate.Session;
 
 import com.elogix.api.delivery_orders.domain.model.Status;
 import com.elogix.api.delivery_orders.domain.usecase.StatusUseCase;
+import com.elogix.api.generics.config.GenericStatusConfig;
 import com.elogix.api.generics.infrastructure.repository.GenericStatus.GenericStatusGatewayImpl;
 import com.elogix.api.product.domain.gateway.ProductGateway;
 import com.elogix.api.product.domain.model.Product;
@@ -12,9 +13,7 @@ import com.elogix.api.product.domain.usecase.ProductTypeUseCase;
 import com.elogix.api.product.infrastructure.exception.ProductNotFoundException;
 import com.elogix.api.product.infrastructure.helper.mapper.ProductMapper;
 import com.elogix.api.shared.domain.model.Hits;
-import com.elogix.api.shared.infraestructure.helpers.UpdateUtils;
 
-import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -22,25 +21,12 @@ public class ProductGatewayImpl
         extends GenericStatusGatewayImpl<Product, ProductData, ProductDataJpaRepository, ProductMapper>
         implements ProductGateway {
     private final ProductTypeUseCase productTypeUseCase;
-    private final StatusUseCase statusUseCase;
 
     public ProductGatewayImpl(
-            ProductDataJpaRepository repository,
-            ProductMapper mapper,
-            ProductTypeUseCase productTypeUseCase,
-            StatusUseCase statusUseCase,
-            EntityManager entityManager,
-            UpdateUtils updateUtils,
-            String deletedFilter) {
-        super(
-                repository,
-                mapper,
-                entityManager,
-                updateUtils,
-                statusUseCase,
-                deletedFilter);
+            GenericStatusConfig<Product, ProductData, ProductDataJpaRepository, ProductMapper> config,
+            ProductTypeUseCase productTypeUseCase) {
+        super(config);
         this.productTypeUseCase = productTypeUseCase;
-        this.statusUseCase = statusUseCase;
     }
 
     @Override

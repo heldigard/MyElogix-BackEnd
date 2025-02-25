@@ -12,15 +12,13 @@ import com.elogix.api.delivery_order.domain.model.OrderStatusChangeObserver;
 import com.elogix.api.delivery_order.infrastructure.repository.delivery_order.DeliveryOrderData;
 import com.elogix.api.delivery_orders.domain.model.EStatus;
 import com.elogix.api.delivery_orders.domain.model.Status;
-import com.elogix.api.delivery_orders.domain.usecase.StatusUseCase;
 import com.elogix.api.generics.infrastructure.repository.GenericProduction.GenericProductionGatewayImpl;
 import com.elogix.api.product.domain.usecase.ProductUseCase;
+import com.elogix.api.product_order.config.ProductOrderConfig;
 import com.elogix.api.product_order.domain.gateway.ProductOrderGateway;
 import com.elogix.api.product_order.domain.model.ProductOrder;
 import com.elogix.api.product_order.infrastructure.helper.ProductOrderMapper;
-import com.elogix.api.shared.infraestructure.helpers.UpdateUtils;
 
-import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -32,21 +30,9 @@ public class ProductOrderGatewayImpl
     private OrderStatusChangeObserver statusObserver;
 
     public ProductOrderGatewayImpl(
-            ProductOrderDataJpaRepository repository,
-            ProductOrderMapper mapper,
-            EntityManager entityManager,
-            StatusUseCase statusUseCase,
-            ProductUseCase productUseCase,
-            UpdateUtils updateUtils,
-            String deletedFilter) {
-        super(
-                repository,
-                mapper,
-                entityManager,
-                updateUtils,
-                statusUseCase,
-                deletedFilter);
-        this.productUseCase = productUseCase;
+            ProductOrderConfig<ProductOrder, ProductOrderData, ProductOrderDataJpaRepository, ProductOrderMapper> config) {
+        super(config);
+        this.productUseCase = config.getProductUseCase();
         this.statusObserver = null;
     }
 
