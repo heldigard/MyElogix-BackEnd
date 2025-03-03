@@ -12,4 +12,5 @@ public interface GenericStatusGateway<T extends GenericEntity> extends GenericGa
 
   T updateStatus(Long id, String status);
 
+  Status getStatus(Long id);
 }

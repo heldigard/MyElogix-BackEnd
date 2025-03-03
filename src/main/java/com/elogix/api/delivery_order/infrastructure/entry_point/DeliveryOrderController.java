@@ -27,7 +27,6 @@ import com.elogix.api.delivery_order.domain.usecase.DeliveryOrderUseCase;
 import com.elogix.api.delivery_order.dto.DeliveryOrderResponse;
 import com.elogix.api.generics.infrastructure.dto.ApiResponse;
 import com.elogix.api.generics.infrastructure.entry_points.GenericProductionController;
-import com.elogix.api.product_order.domain.model.ProductOrder;
 import com.elogix.api.shared.domain.model.pagination.DateRange;
 import com.elogix.api.shared.domain.model.pagination.PaginationCriteria;
 import com.elogix.api.shared.infraestructure.helpers.DateUtils;
@@ -154,20 +153,8 @@ public class DeliveryOrderController
             @RequestParam(required = false, defaultValue = "false") boolean includeDeleted) {
         try {
             DeliveryOrder order = useCase.findById(id, includeDeleted);
-            DeliveryOrderResponse response = DeliveryOrderResponse.builder().order(order)
-                    .pendingCount((int) order.getProductOrders().stream()
-                            .filter(ProductOrder::isPending).count())
-                    .productionCount((int) order.getProductOrders().stream()
-                            .filter(ProductOrder::isProduction).count())
-                    .finishedCount((int) order.getProductOrders().stream()
-                            .filter(ProductOrder::isFinished).count())
-                    .deliveredCount((int) order.getProductOrders().stream()
-                            .filter(ProductOrder::isDelivered).count())
-                    .cancelledCount((int) order.getProductOrders().stream()
-                            .filter(ProductOrder::isCancelled).count())
-                    .pausedCount((int) order.getProductOrders().stream()
-                            .filter(ProductOrder::isPaused).count())
-                    .build();
+            DeliveryOrderResponse response = DeliveryOrderResponse.of(order);
+
             return ResponseEntity.ok(new ApiResponse<DeliveryOrderResponse>("Order retrieved successfully", response));
         } catch (IllegalArgumentException e) {
             log.error("Invalid request parameters: {}", e.getMessage());

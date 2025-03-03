@@ -21,7 +21,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
   @Override
   public void configureMessageBroker(MessageBrokerRegistry config) {
-    config.enableSimpleBroker("/topic");
+    config.enableSimpleBroker("/topic", "/queue");
     config.setApplicationDestinationPrefixes("/app");
     config.setUserDestinationPrefix("/user");
   }
@@ -31,7 +31,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     registry.addEndpoint("/ws")
         .setAllowedOriginPatterns(
             securityProperties.getAllowedOrigins().toArray(new String[0]))
-        .withSockJS();
+        .withSockJS(); // Enable SockJS fallback options
+
+    registry.addEndpoint("/ws-plain")
+        .setAllowedOriginPatterns(
+            securityProperties.getAllowedOrigins().toArray(new String[0]));
   }
 
   @Override

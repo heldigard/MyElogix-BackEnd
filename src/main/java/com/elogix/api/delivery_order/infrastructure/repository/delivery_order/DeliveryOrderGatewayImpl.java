@@ -285,6 +285,12 @@ public class DeliveryOrderGatewayImpl extends
         DeliveryOrder saved = saveDeliveryOrder(order);
         updateStatistics(saved);
 
+        // Send WebSocket notification about the update
+        notificationService.notifyDeliveryOrderChange(
+                saved.getId(),
+                saved,
+                "UPDATED");
+
         return saved;
     }
 
@@ -527,6 +533,8 @@ public class DeliveryOrderGatewayImpl extends
         }
 
         save(order);
+        notificationService.notifyDeliveryOrderChange(id, order, "STATUS_CHANGED");
+
         return order;
     }
 
@@ -540,11 +548,15 @@ public class DeliveryOrderGatewayImpl extends
     @Override
     @Transactional
     public void onStatusChanged(Long orderId, EStatus newStatus) {
-        if (newStatus == EStatus.FINISHED) {
+        Status status = getStatus(orderId);
+        if (newStatus == EStatus.FINISHED && !EStatus.FINISHED.equals(status.getName())) {
             isOrderFinished(orderId);
-        } else if (newStatus == EStatus.DELIVERED) {
+        } else if (newStatus == EStatus.DELIVERED && !EStatus.DELIVERED.equals(status.getName())) {
             isOrderDelivered(orderId);
         }
+
+        DeliveryOrder order = findById(orderId, false);
+        notificationService.notifyDeliveryOrderChange(orderId, order, "STATUS_CHANGED");
     }
 
     @Override
@@ -579,11 +591,14 @@ public class DeliveryOrderGatewayImpl extends
             DateRange dateRange,
             PaginationCriteria pagination,
             boolean includeDeleted) {
+        if (customerId == null) {
+            throw new IllegalArgumentException("Customer ID cannot be null");
+        }
+
         List<DeliveryOrder> orders;
 
         Sort sort = Sort.by(pagination.getSortOrders());
-        Pageable paging = PageRequest.of(pagination.getPage(), pagination.getPageSize(),
-                sort);
+        Pageable paging = PageRequest.of(pagination.getPage(), pagination.getPageSize(), sort);
 
         List<Long> statusIdList = requestUtils.getBillableDeliveryOrderStatusIds();
         try (Session session = setDeleteFilter(includeDeleted)) {
@@ -594,26 +609,15 @@ public class DeliveryOrderGatewayImpl extends
                     dateRange.endDate(),
                     statusIdList,
                     paging);
-            orders = mapper.toDomain(ordersData).stream().toList();
+            orders = new ArrayList<>(mapper.toDomain(ordersData));
+        } catch (Exception e) {
+            log.error("Error retrieving orders for customer invoicing. CustomerId: {}", customerId, e);
+            throw new RuntimeException("Error retrieving orders for customer invoicing", e);
         }
 
         return orders.stream()
-                .map(this::buildDeliveryOrderResponse)
+                .map(DeliveryOrderResponse::of)
                 .toList();
-    }
-
-    private DeliveryOrderResponse buildDeliveryOrderResponse(DeliveryOrder order) {
-        List<ProductOrder> productOrders = order.getProductOrders();
-
-        return DeliveryOrderResponse.builder()
-                .order(order)
-                .pendingCount((int) productOrders.stream().filter(ProductOrder::isPending).count())
-                .productionCount((int) productOrders.stream().filter(ProductOrder::isProduction).count())
-                .finishedCount((int) productOrders.stream().filter(ProductOrder::isFinished).count())
-                .deliveredCount((int) productOrders.stream().filter(ProductOrder::isDelivered).count())
-                .cancelledCount((int) productOrders.stream().filter(ProductOrder::isCancelled).count())
-                .pausedCount((int) productOrders.stream().filter(ProductOrder::isPaused).count())
-                .build();
     }
 
     /*
@@ -671,7 +675,7 @@ public class DeliveryOrderGatewayImpl extends
         }
 
         return orders.stream()
-                .map(this::buildDeliveryOrderResponse)
+                .map(DeliveryOrderResponse::of)
                 .toList();
     }
 }

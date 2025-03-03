@@ -17,7 +17,7 @@ public class GenericProductionConfig<T extends GenericProduction, D extends Gene
   private final NotificationService notificationService;
 
   public GenericProductionConfig(GenericStatusConfig<T, D, R, M> config, NotificationService notificationService) {
-    super(config, config.getStatusUseCase());
+    super(config, config.getStatusUseCase(), config.getStatusMapper());
     this.notificationService = notificationService;
   }
 }

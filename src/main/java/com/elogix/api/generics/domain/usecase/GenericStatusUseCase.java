@@ -23,4 +23,8 @@ public abstract class GenericStatusUseCase<T extends GenericEntity, G extends Ge
   public T updateStatus(Long id, String status) {
     return gateway.updateStatus(id, status);
   }
+
+  Status getStatus(Long id) {
+    return gateway.getStatus(id);
+  }
 }

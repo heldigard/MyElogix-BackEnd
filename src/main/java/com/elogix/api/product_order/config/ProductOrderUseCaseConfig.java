@@ -10,6 +10,7 @@ import com.elogix.api.customers.infrastructure.driven_adapters.jpa_repository.cu
 import com.elogix.api.delivery_orders.domain.usecase.MeasureDetailUseCase;
 import com.elogix.api.delivery_orders.domain.usecase.MetricUnitUseCase;
 import com.elogix.api.delivery_orders.domain.usecase.StatusUseCase;
+import com.elogix.api.delivery_orders.infrastructure.helpers.mappers.StatusMapper;
 import com.elogix.api.generics.config.GenericBasicConfig;
 import com.elogix.api.generics.config.GenericConfig;
 import com.elogix.api.generics.config.GenericProductionConfig;
@@ -32,58 +33,59 @@ import jakarta.persistence.EntityManager;
 
 @Configuration
 public class ProductOrderUseCaseConfig {
-    public static final String DELETED_FILTER = "deletedProductOrderFilter";
+        public static final String DELETED_FILTER = "deletedProductOrderFilter";
 
-    @Bean
-    public ProductOrderGatewayImpl productOrderGatewayImpl(
-            ProductOrderDataJpaRepository repository,
-            ProductOrderMapper mapper,
-            EntityManager entityManager,
-            UpdateUtils updateUtils,
-            NotificationService notificationService,
-            StatusUseCase statusUseCase,
-            CustomerUseCase customerUseCase,
-            UserBasicUseCase userUseCase,
-            ProductUseCase productUseCase,
-            CustomerDataJpaRepository customerRepo,
-            DeliveryZoneBasicUseCase deliveryZoneUseCase,
-            BranchOfficeUseCase officeUseCase,
-            MetricUnitUseCase metricUnitUseCase,
-            MeasureDetailUseCase measureDetailUseCase,
-            ProductBasicUseCase productBasicUseCase,
-            RequestUtils requestUtils) {
+        @Bean
+        public ProductOrderGatewayImpl productOrderGatewayImpl(
+                        ProductOrderDataJpaRepository repository,
+                        ProductOrderMapper mapper,
+                        EntityManager entityManager,
+                        UpdateUtils updateUtils,
+                        NotificationService notificationService,
+                        StatusUseCase statusUseCase,
+                        StatusMapper statusMapper,
+                        CustomerUseCase customerUseCase,
+                        UserBasicUseCase userUseCase,
+                        ProductUseCase productUseCase,
+                        CustomerDataJpaRepository customerRepo,
+                        DeliveryZoneBasicUseCase deliveryZoneUseCase,
+                        BranchOfficeUseCase officeUseCase,
+                        MetricUnitUseCase metricUnitUseCase,
+                        MeasureDetailUseCase measureDetailUseCase,
+                        ProductBasicUseCase productBasicUseCase,
+                        RequestUtils requestUtils) {
 
-        GenericBasicConfig<ProductOrder, ProductOrderData, ProductOrderDataJpaRepository, ProductOrderMapper> basicConfig = createBasicConfig(
-                repository, mapper, entityManager);
+                GenericBasicConfig<ProductOrder, ProductOrderData, ProductOrderDataJpaRepository, ProductOrderMapper> basicConfig = createBasicConfig(
+                                repository, mapper, entityManager);
 
-        GenericConfig<ProductOrder, ProductOrderData, ProductOrderDataJpaRepository, ProductOrderMapper> genericConfig = new GenericConfig<>(
-                basicConfig, updateUtils);
+                GenericConfig<ProductOrder, ProductOrderData, ProductOrderDataJpaRepository, ProductOrderMapper> genericConfig = new GenericConfig<>(
+                                basicConfig, updateUtils);
 
-        GenericStatusConfig<ProductOrder, ProductOrderData, ProductOrderDataJpaRepository, ProductOrderMapper> statusConfig = new GenericStatusConfig<>(
-                genericConfig, statusUseCase);
+                GenericStatusConfig<ProductOrder, ProductOrderData, ProductOrderDataJpaRepository, ProductOrderMapper> statusConfig = new GenericStatusConfig<>(
+                                genericConfig, statusUseCase, statusMapper);
 
-        GenericProductionConfig<ProductOrder, ProductOrderData, ProductOrderDataJpaRepository, ProductOrderMapper> productionConfig = new GenericProductionConfig<>(
-                statusConfig, notificationService);
+                GenericProductionConfig<ProductOrder, ProductOrderData, ProductOrderDataJpaRepository, ProductOrderMapper> productionConfig = new GenericProductionConfig<>(
+                                statusConfig, notificationService);
 
-        ProductOrderConfig<ProductOrder, ProductOrderData, ProductOrderDataJpaRepository, ProductOrderMapper> productOrderConfig = new ProductOrderConfig<>(
-                productionConfig, productUseCase);
+                ProductOrderConfig<ProductOrder, ProductOrderData, ProductOrderDataJpaRepository, ProductOrderMapper> productOrderConfig = new ProductOrderConfig<>(
+                                productionConfig, productUseCase);
 
-        return new ProductOrderGatewayImpl(productOrderConfig);
-    }
+                return new ProductOrderGatewayImpl(productOrderConfig);
+        }
 
-    private GenericBasicConfig<ProductOrder, ProductOrderData, ProductOrderDataJpaRepository, ProductOrderMapper> createBasicConfig(
-            ProductOrderDataJpaRepository repository,
-            ProductOrderMapper mapper,
-            EntityManager entityManager) {
-        return new GenericBasicConfig<>(
-                repository,
-                mapper,
-                entityManager,
-                DELETED_FILTER);
-    }
+        private GenericBasicConfig<ProductOrder, ProductOrderData, ProductOrderDataJpaRepository, ProductOrderMapper> createBasicConfig(
+                        ProductOrderDataJpaRepository repository,
+                        ProductOrderMapper mapper,
+                        EntityManager entityManager) {
+                return new GenericBasicConfig<>(
+                                repository,
+                                mapper,
+                                entityManager,
+                                DELETED_FILTER);
+        }
 
-    @Bean
-    public ProductOrderUseCase productOrderUseCase(ProductOrderGateway gateway) {
-        return new ProductOrderUseCase(gateway);
-    }
+        @Bean
+        public ProductOrderUseCase productOrderUseCase(ProductOrderGateway gateway) {
+                return new ProductOrderUseCase(gateway);
+        }
 }

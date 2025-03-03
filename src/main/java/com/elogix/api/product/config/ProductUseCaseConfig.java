@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.elogix.api.delivery_orders.domain.usecase.StatusUseCase;
+import com.elogix.api.delivery_orders.infrastructure.helpers.mappers.StatusMapper;
 import com.elogix.api.generics.config.GenericBasicConfig;
 import com.elogix.api.generics.config.GenericConfig;
 import com.elogix.api.generics.config.GenericStatusConfig;
@@ -21,42 +22,43 @@ import jakarta.persistence.EntityManager;
 
 @Configuration
 public class ProductUseCaseConfig {
-    public static final String DELETED_FILTER = "deletedProductFilter";
+        public static final String DELETED_FILTER = "deletedProductFilter";
 
-    @Bean
-    public ProductGatewayImpl productGatewayImpl(
-            ProductDataJpaRepository repository,
-            ProductMapper mapper,
-            EntityManager entityManager,
-            UpdateUtils updateUtils,
-            StatusUseCase statusUseCase,
-            ProductTypeUseCase productTypeUseCase) {
+        @Bean
+        public ProductGatewayImpl productGatewayImpl(
+                        ProductDataJpaRepository repository,
+                        ProductMapper mapper,
+                        EntityManager entityManager,
+                        UpdateUtils updateUtils,
+                        StatusUseCase statusUseCase,
+                        StatusMapper statusMapper,
+                        ProductTypeUseCase productTypeUseCase) {
 
-        GenericBasicConfig<Product, ProductData, ProductDataJpaRepository, ProductMapper> basicConfig = createBasicConfig(
-                repository, mapper, entityManager);
+                GenericBasicConfig<Product, ProductData, ProductDataJpaRepository, ProductMapper> basicConfig = createBasicConfig(
+                                repository, mapper, entityManager);
 
-        GenericConfig<Product, ProductData, ProductDataJpaRepository, ProductMapper> genericConfig = new GenericConfig<>(
-                basicConfig, updateUtils);
+                GenericConfig<Product, ProductData, ProductDataJpaRepository, ProductMapper> genericConfig = new GenericConfig<>(
+                                basicConfig, updateUtils);
 
-        GenericStatusConfig<Product, ProductData, ProductDataJpaRepository, ProductMapper> statusConfig = new GenericStatusConfig<>(
-                genericConfig, statusUseCase);
+                GenericStatusConfig<Product, ProductData, ProductDataJpaRepository, ProductMapper> statusConfig = new GenericStatusConfig<>(
+                                genericConfig, statusUseCase, statusMapper);
 
-        return new ProductGatewayImpl(statusConfig, productTypeUseCase);
-    }
+                return new ProductGatewayImpl(statusConfig, productTypeUseCase);
+        }
 
-    private GenericBasicConfig<Product, ProductData, ProductDataJpaRepository, ProductMapper> createBasicConfig(
-            ProductDataJpaRepository repository,
-            ProductMapper mapper,
-            EntityManager entityManager) {
-        return new GenericBasicConfig<>(
-                repository,
-                mapper,
-                entityManager,
-                DELETED_FILTER);
-    }
+        private GenericBasicConfig<Product, ProductData, ProductDataJpaRepository, ProductMapper> createBasicConfig(
+                        ProductDataJpaRepository repository,
+                        ProductMapper mapper,
+                        EntityManager entityManager) {
+                return new GenericBasicConfig<>(
+                                repository,
+                                mapper,
+                                entityManager,
+                                DELETED_FILTER);
+        }
 
-    @Bean
-    public ProductUseCase productUseCase(ProductGateway gateway) {
-        return new ProductUseCase(gateway);
-    }
+        @Bean
+        public ProductUseCase productUseCase(ProductGateway gateway) {
+                return new ProductUseCase(gateway);
+        }
 }

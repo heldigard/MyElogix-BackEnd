@@ -60,8 +60,13 @@ public class SecurityConfiguration {
                 .cors(cors -> cors.configurationSource(corsService::createCorsConfiguration))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(
-                        auth -> auth.requestMatchers("/api/v1/auth/**",
-                                "/actuator/health")
+                        auth -> auth.requestMatchers(
+                                "/api/v1/auth/**",
+                                "/actuator/health",
+                                "/ws",
+                                "/ws-plain",
+                                "/ws/**",
+                                "/ws-plain/**")
                                 .permitAll()
                                 .anyRequest()
                                 .authenticated())

@@ -42,3 +42,6 @@ logging:
     org.springframework: DEBUG
     com.elogix.api: DEBUG
     web: DEBUG
+    org.springframework.messaging: DEBUG
+    org.springframework.web.socket: DEBUG
+    com.elogix.api.shared.infraestructure.websocket: DEBUG

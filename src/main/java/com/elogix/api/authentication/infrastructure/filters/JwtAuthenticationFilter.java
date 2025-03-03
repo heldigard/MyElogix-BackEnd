@@ -49,6 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = authHeader.substring(7);
 
             if (!jwtTokenProvider.validateAccessToken(token)) {
+                tokenGateway.revokeToken(token);
                 throw new JwtTokenException(token, "Access token expired");
             }
 
@@ -57,17 +58,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetailsImpl userDetails = userDetailsService.loadUserByUsername(username);
 
-                if (jwtTokenProvider.validateAccessToken(token)) {
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userDetails,
-                            null,
-                            userDetails.getAuthorities());
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                } else {
-                    tokenGateway.revokeToken(token); // Use gateway instead of useCase
-                    throw new JwtTokenException(token, "Token expired");
-                }
+                // Token is already validated, no need to check again
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                        userDetails,
+                        null,
+                        userDetails.getAuthorities());
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authToken);
             }
 
             filterChain.doFilter(request, response);
@@ -99,6 +96,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String path = request.getServletPath();
         return path.equals("/api/v1/auth/authenticate") ||
                 path.equals("/api/v1/auth/refresh") ||
-                path.equals("/api/v1/auth/register");
+                path.equals("/api/v1/auth/register") ||
+                path.equals("/api/v1/auth/logout") ||
+                path.equals("/actuator/health") ||
+                path.equals("/ws") ||
+                path.equals("/ws-plain") ||
+                path.startsWith("/ws/") ||
+                path.startsWith("/ws-plain/");
     }
 }

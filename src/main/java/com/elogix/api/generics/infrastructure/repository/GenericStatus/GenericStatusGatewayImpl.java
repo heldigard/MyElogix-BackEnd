@@ -6,6 +6,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.elogix.api.delivery_orders.domain.model.EStatus;
 import com.elogix.api.delivery_orders.domain.model.Status;
 import com.elogix.api.delivery_orders.domain.usecase.StatusUseCase;
+import com.elogix.api.delivery_orders.infrastructure.driven_adapters.jpa_repository.status.StatusData;
+import com.elogix.api.delivery_orders.infrastructure.helpers.mappers.StatusMapper;
 import com.elogix.api.generics.config.GenericStatusConfig;
 import com.elogix.api.generics.domain.gateway.GenericStatusGateway;
 import com.elogix.api.generics.domain.model.GenericStatus;
@@ -29,6 +31,7 @@ public abstract class GenericStatusGatewayImpl<T extends GenericStatus, D extend
         implements GenericStatusGateway<T> {
 
     protected final StatusUseCase statusUseCase;
+    protected final StatusMapper statusMapper;
 
     /**
      * Constructor for GenericProductionGatewayImpl
@@ -37,6 +40,7 @@ public abstract class GenericStatusGatewayImpl<T extends GenericStatus, D extend
             GenericStatusConfig<T, D, R, M> config) {
         super(config);
         this.statusUseCase = config.getStatusUseCase();
+        this.statusMapper = config.getStatusMapper();
     }
 
     @Override
@@ -59,7 +63,7 @@ public abstract class GenericStatusGatewayImpl<T extends GenericStatus, D extend
     @Transactional
     public T updateStatus(Long id, EStatus statusName) {
         Status status = statusUseCase.findByName(statusName, false);
-        return updateStatus(id, status);
+        return this.updateStatus(id, status);
     }
 
     @Override
@@ -69,6 +73,13 @@ public abstract class GenericStatusGatewayImpl<T extends GenericStatus, D extend
         EStatus statusEnum = EStatus.valueOf(status.toUpperCase());
 
         // Reuse existing method that handles EStatus
-        return updateStatus(id, statusEnum);
+        return this.updateStatus(id, statusEnum);
+    }
+
+    @Override
+    public Status getStatus(Long id) {
+        StatusData statusData = repository.getStatus(id);
+
+        return statusMapper.toDomain(statusData);
     }
 }

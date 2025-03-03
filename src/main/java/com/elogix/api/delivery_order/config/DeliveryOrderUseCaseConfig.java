@@ -17,6 +17,7 @@ import com.elogix.api.delivery_order.infrastructure.repository.delivery_order.De
 import com.elogix.api.delivery_orders.domain.usecase.MeasureDetailUseCase;
 import com.elogix.api.delivery_orders.domain.usecase.MetricUnitUseCase;
 import com.elogix.api.delivery_orders.domain.usecase.StatusUseCase;
+import com.elogix.api.delivery_orders.infrastructure.helpers.mappers.StatusMapper;
 import com.elogix.api.generics.config.GenericBasicConfig;
 import com.elogix.api.generics.config.GenericConfig;
 import com.elogix.api.generics.config.GenericProductionConfig;
@@ -43,6 +44,7 @@ public class DeliveryOrderUseCaseConfig {
                         UpdateUtils updateUtils,
                         NotificationService notificationService,
                         StatusUseCase statusUseCase,
+                        StatusMapper statusMapper,
                         CustomerUseCase customerUseCase,
                         UserBasicUseCase userUseCase,
                         ProductUseCase productUseCase,
@@ -61,7 +63,7 @@ public class DeliveryOrderUseCaseConfig {
                                 basicConfig, updateUtils);
 
                 GenericStatusConfig<DeliveryOrder, DeliveryOrderData, DeliveryOrderDataJpaRepository, DeliveryOrderMapper> statusConfig = new GenericStatusConfig<>(
-                                genericConfig, statusUseCase);
+                                genericConfig, statusUseCase, statusMapper);
 
                 GenericProductionConfig<DeliveryOrder, DeliveryOrderData, DeliveryOrderDataJpaRepository, DeliveryOrderMapper> productionConfig = new GenericProductionConfig<>(
                                 statusConfig, notificationService);

@@ -10,7 +10,9 @@ import com.elogix.api.customers.infrastructure.helpers.mappers.BranchOfficeMappe
 import com.elogix.api.customers.infrastructure.helpers.mappers.CustomerMapper;
 import com.elogix.api.customers.infrastructure.helpers.mappers.DeliveryZoneBasicMapper;
 import com.elogix.api.delivery_order.domain.model.DeliveryOrder;
+import com.elogix.api.delivery_order.domain.model.DeliveryOrderBasic;
 import com.elogix.api.delivery_order.infrastructure.repository.delivery_order.DeliveryOrderData;
+import com.elogix.api.delivery_order.infrastructure.repository.delivery_order_basic.DeliveryOrderBasicData;
 import com.elogix.api.delivery_orders.infrastructure.helpers.mappers.StatusMapper;
 import com.elogix.api.generics.infrastructure.helpers.GenericProductionMapper;
 import com.elogix.api.product_order.infrastructure.helper.ProductOrderMapper;
@@ -98,5 +100,33 @@ public class DeliveryOrderMapper extends GenericProductionMapper<DeliveryOrder, 
                 target.setBilled(source.isBilled());
 
                 return target;
+        }
+
+        public DeliveryOrderBasic toBasic(@NonNull DeliveryOrder source) {
+                return DeliveryOrderBasic.builder()
+                                .id(source.getId())
+                                .createdAt(source.getCreatedAt())
+                                .updatedAt(source.getUpdatedAt())
+                                .billedAt(source.getBilledAt())
+                                .billedBy(source.getBilledBy())
+                                .customer(customerMapper.toBasic(source.getCustomer()))
+                                .deliveryZone(source.getDeliveryZone())
+                                .isBilled(source.isBilled())
+                                .status(source.getStatus())
+                                .build();
+        }
+
+        public DeliveryOrderBasicData toBasic(@NonNull DeliveryOrderData source) {
+                return DeliveryOrderBasicData.builder()
+                                .id(source.getId())
+                                .createdAt(source.getCreatedAt())
+                                .updatedAt(source.getUpdatedAt())
+                                .billedAt(source.getBilledAt())
+                                .billedBy(source.getBilledBy())
+                                .customer(customerMapper.toBasic(source.getCustomer()))
+                                .deliveryZone(source.getDeliveryZone())
+                                .isBilled(source.isBilled())
+                                .status(source.getStatus())
+                                .build();
         }
 }
